@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.training.management.common.RequestContext;
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
@@ -62,10 +63,12 @@ public class PropertyService {
     }
 
     public void updateResidentStatus(Long id, String status) {
-        if (!StringUtils.hasText(status)) {
-            throw new BusinessException(400, "住户状态不能为空");
-        }
+        requireText(status, "住户状态不能为空");
         residentMapper.updateStatus(id, status);
+    }
+
+    public void deleteResident(Long id) {
+        residentMapper.deleteById(id);
     }
 
     public Map<String, Object> getProperties() {
@@ -102,6 +105,10 @@ public class PropertyService {
         return building;
     }
 
+    public void deleteBuilding(Long id) {
+        buildingMapper.deleteById(id);
+    }
+
     public Room createRoom(Room room) {
         fillRoomDefaults(room);
         roomMapper.insert(room);
@@ -120,6 +127,10 @@ public class PropertyService {
             ? status
             : (StringUtils.hasText(residentName) ? "已入住" : "空置");
         roomMapper.bindResident(id, residentName, targetStatus);
+    }
+
+    public void deleteRoom(Long id) {
+        roomMapper.deleteById(id);
     }
 
     public List<RepairOrder> listRepairs() {
@@ -155,6 +166,10 @@ public class PropertyService {
         repairOrderMapper.updateProgress(id, status, assignee, durationHours);
     }
 
+    public void deleteRepair(Long id) {
+        repairOrderMapper.deleteById(id);
+    }
+
     public Map<String, Object> getBilling() {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("summary", Map.of(
@@ -186,10 +201,12 @@ public class PropertyService {
     }
 
     public void updateBillStatus(Long id, String status) {
-        if (!StringUtils.hasText(status)) {
-            throw new BusinessException(400, "账单状态不能为空");
-        }
+        requireText(status, "账单状态不能为空");
         billMapper.updateStatus(id, status);
+    }
+
+    public void deleteBill(Long id) {
+        billMapper.deleteById(id);
     }
 
     public Map<String, Object> getParking() {
@@ -227,6 +244,15 @@ public class PropertyService {
         return notice;
     }
 
+    public void updateNoticeStatus(Long id, String status) {
+        requireText(status, "公告状态不能为空");
+        noticeMapper.updateStatus(id, status);
+    }
+
+    public void deleteNotice(Long id) {
+        noticeMapper.deleteById(id);
+    }
+
     public List<SysUser> listSystemUsers() {
         return sysUserMapper.findAll();
     }
@@ -254,7 +280,15 @@ public class PropertyService {
     }
 
     public void updateSystemUserStatus(Long id, Boolean enabled) {
+        if (Boolean.FALSE.equals(enabled)) {
+            preventCurrentUserRemoval(id, "不能冻结当前登录账号");
+        }
         sysUserMapper.updateEnabled(id, enabled);
+    }
+
+    public void deleteSystemUser(Long id) {
+        preventCurrentUserRemoval(id, "不能删除当前登录账号");
+        sysUserMapper.deleteById(id);
     }
 
     private void fillResidentDefaults(Resident resident) {
@@ -308,6 +342,19 @@ public class PropertyService {
         }
         if (user.getEnabled() == null) {
             user.setEnabled(true);
+        }
+    }
+
+    private void preventCurrentUserRemoval(Long id, String message) {
+        SysUser currentUser = RequestContext.getCurrentUser();
+        if (currentUser != null && id != null && id.equals(currentUser.getId())) {
+            throw new BusinessException(400, message);
+        }
+    }
+
+    private void requireText(String value, String message) {
+        if (!StringUtils.hasText(value)) {
+            throw new BusinessException(400, message);
         }
     }
 

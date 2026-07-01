@@ -86,13 +86,14 @@
             <el-tag effect="plain">{{ row.tag }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="190" fixed="right">
+        <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">查看</el-button>
             <el-button link @click="openEdit(row)">编辑</el-button>
             <el-button link type="danger" @click="toggleResident(row)">
               {{ row.status === '停用' ? '启用' : '停用' }}
             </el-button>
+            <el-button link type="danger" @click="removeResident(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -158,6 +159,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   createResident,
+  deleteResident,
   fetchResidents,
   updateResident,
   updateResidentStatus,
@@ -238,6 +240,15 @@ async function toggleResident(row) {
   })
   await updateResidentStatus(row.id, nextStatus)
   ElMessage.success('住户状态已更新')
+  await loadResidents()
+}
+
+async function removeResident(row) {
+  await ElMessageBox.confirm(`确定要删除住户 ${row.name} 吗？删除后列表中将不再显示。`, '删除住户确认', {
+    type: 'warning',
+  })
+  await deleteResident(row.id)
+  ElMessage.success('住户已删除')
   await loadResidents()
 }
 

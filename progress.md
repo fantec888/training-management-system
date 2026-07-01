@@ -38,3 +38,12 @@
   - Frontend: `cd src/frontend; npm.cmd run build` passed.
   - Login with `admin / 123456` works.
   - Authenticated dashboard API returns `code=200` with stats, demo-flow items, and module-health items.
+- Started second optimization round requested by the user:
+  - Added backend role-permission annotation and interceptor checks.
+  - Added role module mapping for admin, service manager, finance, and engineer roles.
+  - Restricted sensitive backend write APIs by role.
+  - Added frontend route/menu filtering by current user's role.
+  - Repaired several backend response messages and default status values that had become mojibake.
+  - Added delete/status lifecycle actions for residents, buildings, rooms, repairs, bills, notices, and system users.
+  - Added MySQL profile configuration and `docs/mysql-setup.md` for classroom remote database switching.
+  - Refined login and shell UI with role-permission explanation, role tag, and role-aware menu indication.

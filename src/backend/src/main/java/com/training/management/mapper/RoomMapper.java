@@ -3,6 +3,7 @@ package com.training.management.mapper;
 import java.util.List;
 
 import com.training.management.domain.entity.Room;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -61,4 +62,7 @@ public interface RoomMapper {
         WHERE id = #{id}
         """)
     int bindResident(@Param("id") Long id, @Param("residentName") String residentName, @Param("status") String status);
+
+    @Delete("DELETE FROM room WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

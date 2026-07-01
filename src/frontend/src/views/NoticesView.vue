@@ -35,6 +35,14 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="操作" width="170" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="toggleNotice(row)">
+              {{ row.status === '已发布' ? '下架' : '发布' }}
+            </el-button>
+            <el-button link type="danger" @click="removeNotice(row)">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <el-empty v-else description="暂无公告活动数据" />
     </el-card>
@@ -75,8 +83,8 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { createNotice, fetchNotices } from '../api/property'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { createNotice, deleteNotice, fetchNotices, updateNoticeStatus } from '../api/property'
 import { noticesFallback } from '../data/mock'
 
 const notices = ref(noticesFallback)
@@ -109,9 +117,26 @@ async function submitNotice() {
   await loadNotices()
 }
 
+async function toggleNotice(row) {
+  const nextStatus = row.status === '已发布' ? '已下架' : '已发布'
+  await updateNoticeStatus(row.id, nextStatus)
+  ElMessage.success(`公告已${nextStatus === '已发布' ? '发布' : '下架'}`)
+  await loadNotices()
+}
+
+async function removeNotice(row) {
+  await ElMessageBox.confirm(`确定要删除公告「${row.title}」吗？`, '删除公告确认', {
+    type: 'warning',
+  })
+  await deleteNotice(row.id)
+  ElMessage.success('公告已删除')
+  await loadNotices()
+}
+
 function noticeStatusType(status) {
   if (status === '已发布') return 'success'
   if (status === '报名中') return 'warning'
+  if (status === '已下架') return 'danger'
   return 'info'
 }
 

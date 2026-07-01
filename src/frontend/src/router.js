@@ -8,7 +8,8 @@ import PropertiesView from './views/PropertiesView.vue'
 import RepairsView from './views/RepairsView.vue'
 import ResidentsView from './views/ResidentsView.vue'
 import SystemUsersView from './views/SystemUsersView.vue'
-import { getToken } from './utils/auth'
+import { getToken, getUser } from './utils/auth'
+import { canAccessModule } from './utils/roles'
 
 const routes = [
   {
@@ -24,6 +25,7 @@ const routes = [
     path: '/',
     component: DashboardView,
     meta: {
+      module: 'dashboard',
       title: '首页仪表盘',
       description: '查看小区经营指标、待办事项与重点业务趋势。',
     },
@@ -32,6 +34,7 @@ const routes = [
     path: '/residents',
     component: ResidentsView,
     meta: {
+      module: 'residents',
       title: '住户管理',
       description: '统一维护业主、租户、联系方式与认证状态。',
     },
@@ -40,6 +43,7 @@ const routes = [
     path: '/properties',
     component: PropertiesView,
     meta: {
+      module: 'properties',
       title: '楼栋房屋',
       description: '查看楼栋分布、房屋状态、入住与空置情况。',
     },
@@ -48,6 +52,7 @@ const routes = [
     path: '/repairs',
     component: RepairsView,
     meta: {
+      module: 'repairs',
       title: '报修工单',
       description: '管理维修派单、优先级、处理进度与回访。',
     },
@@ -56,6 +61,7 @@ const routes = [
     path: '/billing',
     component: BillingView,
     meta: {
+      module: 'billing',
       title: '收费管理',
       description: '追踪物业费、水电费、账单状态与收缴情况。',
     },
@@ -64,6 +70,7 @@ const routes = [
     path: '/parking',
     component: ParkingView,
     meta: {
+      module: 'parking',
       title: '停车管理',
       description: '掌握车位、车辆、月租与访客停车使用情况。',
     },
@@ -72,6 +79,7 @@ const routes = [
     path: '/notices',
     component: NoticesView,
     meta: {
+      module: 'notices',
       title: '公告活动',
       description: '发布社区公告、活动与触达范围。',
     },
@@ -80,6 +88,7 @@ const routes = [
     path: '/system-users',
     component: SystemUsersView,
     meta: {
+      module: 'system-users',
       title: '系统用户',
       description: '维护后台账号、角色权限与登录安全状态。',
     },
@@ -102,6 +111,11 @@ router.beforeEach((to) => {
 
   if (!token) {
     return '/login'
+  }
+
+  const moduleKey = to.meta.module
+  if (moduleKey && !canAccessModule(getUser(), moduleKey)) {
+    return '/'
   }
 
   return true

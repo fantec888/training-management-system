@@ -23,7 +23,7 @@
           active-text-color="#ffffff"
         >
           <el-menu-item
-            v-for="item in menuItems"
+            v-for="item in visibleMenuItems"
             :key="item.path"
             :index="item.path"
           >
@@ -32,6 +32,11 @@
           </el-menu-item>
         </el-menu>
       </el-scrollbar>
+
+      <div class="role-footnote">
+        <span>当前权限</span>
+        <strong>{{ roleName(currentUser?.roleCode) }}</strong>
+      </div>
     </el-aside>
 
     <el-container>
@@ -61,10 +66,10 @@
             </el-button>
           </el-badge>
           <div class="operator-panel">
-            <el-avatar :size="36">管</el-avatar>
+            <el-avatar :size="36">{{ avatarText }}</el-avatar>
             <div>
               <strong>{{ currentUser?.realName || '运营管理员' }}</strong>
-              <span>{{ currentUser?.roleCode || '总控中心' }}</span>
+              <el-tag size="small" effect="plain" type="primary">{{ roleName(currentUser?.roleCode) }}</el-tag>
             </div>
           </div>
           <el-button plain @click="logout">退出</el-button>
@@ -106,6 +111,7 @@ import {
   Van,
 } from '@element-plus/icons-vue'
 import { clearAuth, getUser } from './utils/auth'
+import { canAccessModule, roleName } from './utils/roles'
 
 const route = useRoute()
 const router = useRouter()
@@ -114,15 +120,20 @@ const noticeVisible = ref(false)
 const globalKeyword = ref('')
 
 const menuItems = [
-  { path: '/', label: '首页仪表盘', icon: DataBoard },
-  { path: '/residents', label: '住户管理', icon: User },
-  { path: '/properties', label: '楼栋房屋', icon: House },
-  { path: '/repairs', label: '报修工单', icon: Tickets },
-  { path: '/billing', label: '收费管理', icon: CreditCard },
-  { path: '/parking', label: '停车管理', icon: Van },
-  { path: '/notices', label: '公告活动', icon: Document },
-  { path: '/system-users', label: '系统用户', icon: SetUp },
+  { module: 'dashboard', path: '/', label: '首页仪表盘', icon: DataBoard },
+  { module: 'residents', path: '/residents', label: '住户管理', icon: User },
+  { module: 'properties', path: '/properties', label: '楼栋房屋', icon: House },
+  { module: 'repairs', path: '/repairs', label: '报修工单', icon: Tickets },
+  { module: 'billing', path: '/billing', label: '收费管理', icon: CreditCard },
+  { module: 'parking', path: '/parking', label: '停车管理', icon: Van },
+  { module: 'notices', path: '/notices', label: '公告活动', icon: Document },
+  { module: 'system-users', path: '/system-users', label: '系统用户', icon: SetUp },
 ]
+
+const visibleMenuItems = computed(() => {
+  const user = currentUser.value
+  return menuItems.filter((item) => canAccessModule(user, item.module))
+})
 
 const notifications = [
   { title: '高优先级工单待处理', content: '地下车库排风异常，请工程组优先跟进。', level: '工单', type: 'danger' },
@@ -135,6 +146,7 @@ const currentTitle = computed(() => route.meta.title || '首页仪表盘')
 const currentDescription = computed(
   () => route.meta.description || '企业级物业运营管理演示系统',
 )
+const avatarText = computed(() => currentUser.value?.realName?.slice(0, 1) || '管')
 
 function showSearchTip() {
   if (!globalKeyword.value) {

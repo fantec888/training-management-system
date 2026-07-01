@@ -59,7 +59,7 @@ select {
 }
 
 .nav-scroll {
-  height: calc(100vh - 78px);
+  height: calc(100vh - 140px);
 }
 
 .brand {
@@ -188,6 +188,31 @@ select {
   font-weight: 700;
 }
 
+.operator-panel .el-tag {
+  margin-top: 3px;
+}
+
+.role-footnote {
+  margin: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.role-footnote span {
+  display: block;
+  color: #9fb3ca;
+  font-size: 12px;
+}
+
+.role-footnote strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
 .content {
   padding: 22px 26px 28px;
 }
@@ -264,6 +289,10 @@ select {
 .panel-header span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.el-table .el-button + .el-button {
+  margin-left: 4px;
 }
 
 .toolbar-card .el-card__body {
@@ -788,6 +817,26 @@ select {
   display: grid;
   gap: 4px;
   margin-top: 10px;
+  font-size: 13px;
+}
+
+.role-preview {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #dbe8f7;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.role-preview strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.role-preview span {
+  color: var(--muted);
   font-size: 13px;
 }
 

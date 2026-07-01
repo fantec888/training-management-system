@@ -67,12 +67,13 @@
         <el-table-column label="耗时" width="90">
           <template #default="{ row }">{{ row.durationHours }} 小时</template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="290" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
             <el-button link type="primary" @click="openProgress(row, '待处理')">派单</el-button>
             <el-button link type="warning" @click="quickProgress(row, '处理中')">处理</el-button>
             <el-button link type="success" @click="quickProgress(row, '已完成')">完成</el-button>
+            <el-button link type="danger" @click="removeRepair(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -149,8 +150,8 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { createRepair, fetchRepairs, updateRepairProgress } from '../api/property'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { createRepair, deleteRepair, fetchRepairs, updateRepairProgress } from '../api/property'
 import { repairsFallback } from '../data/mock'
 import { exportCsv } from '../utils/exportCsv'
 
@@ -227,6 +228,15 @@ async function submitProgress() {
   await updateRepairProgress(currentRepair.value.id, progressForm)
   ElMessage.success('工单进度已保存')
   progressVisible.value = false
+  await loadRepairs()
+}
+
+async function removeRepair(row) {
+  await ElMessageBox.confirm(`确定要删除工单 ${row.code} 吗？`, '删除工单确认', {
+    type: 'warning',
+  })
+  await deleteRepair(row.id)
+  ElMessage.success('工单已删除')
   await loadRepairs()
 }
 

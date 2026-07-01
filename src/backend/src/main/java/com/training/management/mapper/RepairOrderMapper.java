@@ -3,6 +3,7 @@ package com.training.management.mapper;
 import java.util.List;
 
 import com.training.management.domain.entity.RepairOrder;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -49,4 +50,7 @@ public interface RepairOrderMapper {
         @Param("assignee") String assignee,
         @Param("durationHours") java.math.BigDecimal durationHours
     );
+
+    @Delete("DELETE FROM repair_order WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

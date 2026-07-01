@@ -41,12 +41,13 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button link :type="row.enabled ? 'danger' : 'primary'" @click="toggleStatus(row)">
               {{ row.enabled ? '禁用' : '启用' }}
             </el-button>
+            <el-button link type="danger" @click="removeUser(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -109,9 +110,10 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   createSystemUser,
+  deleteSystemUser,
   fetchSystemUsers,
   updateSystemUser,
   updateSystemUserStatus,
@@ -174,6 +176,15 @@ async function submitUser() {
 async function toggleStatus(row) {
   await updateSystemUserStatus(row.id, !row.enabled)
   ElMessage.success('账号状态已更新')
+  await loadSystemUsers()
+}
+
+async function removeUser(row) {
+  await ElMessageBox.confirm(`确定要删除账号 ${row.username} 吗？`, '删除账号确认', {
+    type: 'warning',
+  })
+  await deleteSystemUser(row.id)
+  ElMessage.success('账号已删除')
   await loadSystemUsers()
 }
 

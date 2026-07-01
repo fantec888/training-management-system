@@ -32,4 +32,9 @@ public class GlobalExceptionHandler {
             .collect(Collectors.joining("；"));
         return ApiResponse.failure(400, message);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ApiResponse<Void> handleException(Exception exception) {
+        return ApiResponse.failure(500, "系统异常：" + exception.getMessage());
+    }
 }

@@ -1,6 +1,7 @@
 package com.training.management.mapper;
 
 import com.training.management.domain.entity.SysUser;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -59,4 +60,7 @@ public interface SysUserMapper {
         WHERE id = #{id}
         """)
     int updateLastLogin(@Param("id") Long id);
+
+    @Delete("DELETE FROM sys_user WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

@@ -29,6 +29,7 @@
 - Phase 4: Frontend API integration for all pages - complete
 - Phase 5: Verification and local run - complete
 - Phase 6: Repository structure cleanup - complete
+- Phase 7: Role permissions, CRUD completion, MySQL profile, and UI polish - complete
 
 ## Decisions
 
@@ -38,6 +39,8 @@
 - Keep MySQL configuration template in `src/backend/src/main/resources/application.properties` for classroom remote database switching.
 - Use authenticated `/api/**` endpoints except `/api/auth/login` and `/api/health`.
 - Use focused list/update APIs that are enough for classroom demo and future CRUD expansion.
+- Use lightweight role annotations for classroom-friendly permission control.
+- Keep H2 as the default local database and provide a separate MySQL profile for remote database switching.
 
 ## Verification
 

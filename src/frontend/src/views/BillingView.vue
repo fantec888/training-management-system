@@ -70,10 +70,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="dueDate" label="截止日期" min-width="120" />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button link type="success" :disabled="row.status === '已缴费'" @click="markPaid(row)">缴费确认</el-button>
             <el-button link type="danger" :disabled="row.status === '已缴费'" @click="markOverdue(row)">标记逾期</el-button>
+            <el-button link type="danger" @click="removeBill(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -122,8 +123,8 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { createBill, fetchBilling, updateBillStatus } from '../api/property'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { createBill, deleteBill, fetchBilling, updateBillStatus } from '../api/property'
 import { billsFallback } from '../data/mock'
 import { toCurrency } from '../utils/format'
 
@@ -186,6 +187,15 @@ async function markPaid(row) {
 async function markOverdue(row) {
   await updateBillStatus(row.id, '逾期')
   ElMessage.success('已标记为逾期')
+  await loadBilling()
+}
+
+async function removeBill(row) {
+  await ElMessageBox.confirm(`确定要删除 ${row.residentName} 的 ${row.billPeriod} 账单吗？`, '删除账单确认', {
+    type: 'warning',
+  })
+  await deleteBill(row.id)
+  ElMessage.success('账单已删除')
   await loadBilling()
 }
 

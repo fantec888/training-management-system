@@ -3,10 +3,13 @@ package com.training.management.mapper;
 import java.util.List;
 
 import com.training.management.domain.entity.Notice;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface NoticeMapper {
@@ -30,4 +33,10 @@ public interface NoticeMapper {
         """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Notice notice);
+
+    @Update("UPDATE notice SET status = #{status} WHERE id = #{id}")
+    int updateStatus(@Param("id") Long id, @Param("status") String status);
+
+    @Delete("DELETE FROM notice WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

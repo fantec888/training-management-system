@@ -16,6 +16,10 @@ export function updateResidentStatus(id, status) {
   return request.patch(`/api/residents/${id}/status?status=${encodeURIComponent(status)}`)
 }
 
+export function deleteResident(id) {
+  return request.delete(`/api/residents/${id}`)
+}
+
 export function fetchProperties() {
   return request.get('/api/properties')
 }
@@ -28,12 +32,20 @@ export function updateBuilding(id, data) {
   return request.put(`/api/buildings/${id}`, data)
 }
 
+export function deleteBuilding(id) {
+  return request.delete(`/api/buildings/${id}`)
+}
+
 export function createRoom(data) {
   return request.post('/api/rooms', data)
 }
 
 export function updateRoom(id, data) {
   return request.put(`/api/rooms/${id}`, data)
+}
+
+export function deleteRoom(id) {
+  return request.delete(`/api/rooms/${id}`)
 }
 
 export function bindRoomResident(id, data) {
@@ -55,6 +67,10 @@ export function updateRepairProgress(id, data) {
   return request.patch(`/api/repairs/${id}/progress`, data)
 }
 
+export function deleteRepair(id) {
+  return request.delete(`/api/repairs/${id}`)
+}
+
 export function fetchBilling() {
   return request.get('/api/billing')
 }
@@ -67,6 +83,10 @@ export function updateBillStatus(id, status) {
   return request.patch(`/api/billing/${id}/status?status=${encodeURIComponent(status)}`)
 }
 
+export function deleteBill(id) {
+  return request.delete(`/api/billing/${id}`)
+}
+
 export function fetchParking() {
   return request.get('/api/parking')
 }
@@ -77,6 +97,14 @@ export function fetchNotices() {
 
 export function createNotice(data) {
   return request.post('/api/notices', data)
+}
+
+export function updateNoticeStatus(id, status) {
+  return request.patch(`/api/notices/${id}/status?status=${encodeURIComponent(status)}`)
+}
+
+export function deleteNotice(id) {
+  return request.delete(`/api/notices/${id}`)
 }
 
 export function fetchSystemUsers() {
@@ -93,4 +121,8 @@ export function updateSystemUser(id, data) {
 
 export function updateSystemUserStatus(id, enabled) {
   return request.patch(`/api/system-users/${id}/status?enabled=${enabled}`)
+}
+
+export function deleteSystemUser(id) {
+  return request.delete(`/api/system-users/${id}`)
 }

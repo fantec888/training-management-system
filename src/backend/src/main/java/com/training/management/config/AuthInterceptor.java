@@ -1,6 +1,8 @@
 package com.training.management.config;
 
 import com.training.management.common.RequestContext;
+import com.training.management.common.RoleCodes;
+import com.training.management.common.annotation.RequireRole;
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.SysUser;
 import com.training.management.service.AuthService;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
@@ -32,7 +35,23 @@ public class AuthInterceptor implements HandlerInterceptor {
         String username = jwtUtil.parseUsername(token.substring(7));
         SysUser user = authService.loadEnabledUser(username);
         RequestContext.setCurrentUser(user);
+        checkRole(handler, user);
         return true;
+    }
+
+    private void checkRole(Object handler, SysUser user) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
+            return;
+        }
+
+        RequireRole methodRule = handlerMethod.getMethodAnnotation(RequireRole.class);
+        RequireRole classRule = handlerMethod.getBeanType().getAnnotation(RequireRole.class);
+        RequireRole rule = methodRule != null ? methodRule : classRule;
+        if (rule == null || RoleCodes.hasAnyRole(user.getRoleCode(), rule.value())) {
+            return;
+        }
+
+        throw new BusinessException(403, "当前账号没有执行该操作的权限");
     }
 
     @Override

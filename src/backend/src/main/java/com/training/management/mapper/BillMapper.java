@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.training.management.domain.entity.Bill;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -42,4 +43,7 @@ public interface BillMapper {
 
     @Update("UPDATE bill SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status);
+
+    @Delete("DELETE FROM bill WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

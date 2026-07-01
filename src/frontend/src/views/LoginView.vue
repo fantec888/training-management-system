@@ -55,6 +55,11 @@
           <span>演示账号：admin</span>
           <span>演示密码：123456</span>
         </div>
+
+        <div class="role-preview">
+          <strong>角色权限演示</strong>
+          <span>管理员查看全模块，财务侧重收费，维修侧重工单和楼栋，物业人员侧重住户与公告。</span>
+        </div>
       </el-card>
     </div>
   </section>

@@ -21,7 +21,7 @@ training-management-system
 - 后端：JDK 17、Spring Boot 3.5.16、Maven Wrapper、MyBatis、JWT
 - 前端：Node.js、Vue 3、Vite、Vue Router、Element Plus、Axios
 - 数据库：本地开发默认使用 H2 文件数据库，并开启 MySQL 兼容模式
-- 远程数据库：老师提供 MySQL 地址后，可在 `src/backend/src/main/resources/application.properties` 中切换
+- 远程数据库：老师提供 MySQL 地址后，可使用 `src/backend/src/main/resources/application-mysql.properties` 切换
 
 ## 已完成模块
 
@@ -140,16 +140,29 @@ todo_item
 如果老师给了远程 MySQL 数据库，需要修改：
 
 ```text
-src/backend/src/main/resources/application.properties
+src/backend/src/main/resources/application-mysql.properties
 ```
 
-把当前 H2 配置替换为文件中已经保留的 MySQL 模板，例如：
+把里面的连接地址、用户名、密码改成老师给的信息，例如：
 
 ```properties
 spring.datasource.url=jdbc:mysql://老师给的IP:3306/training_management?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
 spring.datasource.username=老师给的用户名
 spring.datasource.password=老师给的密码
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+```
+
+然后使用 MySQL profile 启动：
+
+```powershell
+cd E:\企业实训\training-management-system\src\backend
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+详细说明见：
+
+```text
+docs/mysql-setup.md
 ```
 
 ## 验证结果

@@ -3,9 +3,11 @@ package com.training.management.mapper;
 import java.util.List;
 
 import com.training.management.domain.entity.Building;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -27,6 +29,7 @@ public interface BuildingMapper {
 
     @Select("SELECT COALESCE(AVG(occupancy_rate), 0) FROM building")
     java.math.BigDecimal averageOccupancyRate();
+
     @Insert("""
         INSERT INTO building (name, floors, units, occupancy_rate, vacant_count, manager, status)
         VALUES (#{name}, #{floors}, #{units}, #{occupancyRate}, #{vacantCount}, #{manager}, #{status})
@@ -46,4 +49,7 @@ public interface BuildingMapper {
         WHERE id = #{id}
         """)
     int update(Building building);
+
+    @Delete("DELETE FROM building WHERE id = #{id}")
+    int deleteById(@Param("id") Long id);
 }

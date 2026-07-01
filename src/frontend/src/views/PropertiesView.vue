@@ -51,9 +51,10 @@
             <el-progress :percentage="Number(row.occupancyRate)" :stroke-width="9" status="success" />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openBuilding(row)">编辑</el-button>
+            <el-button link type="danger" @click="removeBuilding(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -84,10 +85,11 @@
             <el-tag :type="roomStatusType(row.status)" effect="plain">{{ row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openRoom(row)">编辑</el-button>
             <el-button link type="success" @click="openBind(row)">绑定住户</el-button>
+            <el-button link type="danger" @click="removeRoom(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -178,11 +180,13 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   bindRoomResident,
   createBuilding,
   createRoom,
+  deleteBuilding,
+  deleteRoom,
   fetchProperties,
   updateBuilding,
   updateRoom,
@@ -236,6 +240,15 @@ async function submitBuilding() {
   await loadProperties()
 }
 
+async function removeBuilding(row) {
+  await ElMessageBox.confirm(`确定要删除楼栋 ${row.name} 吗？`, '删除楼栋确认', {
+    type: 'warning',
+  })
+  await deleteBuilding(row.id)
+  ElMessage.success('楼栋已删除')
+  await loadProperties()
+}
+
 function openRoom(row) {
   Object.assign(roomForm, row || defaultRoom())
   roomVisible.value = true
@@ -253,6 +266,15 @@ async function submitRoom() {
   }
   ElMessage.success('房屋信息已保存')
   roomVisible.value = false
+  await loadProperties()
+}
+
+async function removeRoom(row) {
+  await ElMessageBox.confirm(`确定要删除房屋 ${row.buildingName}-${row.unitNo}-${row.roomNo} 吗？`, '删除房屋确认', {
+    type: 'warning',
+  })
+  await deleteRoom(row.id)
+  ElMessage.success('房屋已删除')
   await loadProperties()
 }
 

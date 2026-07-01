@@ -20,6 +20,10 @@ service.interceptors.response.use(
   (response) => {
     const payload = response.data
     if (payload.code !== 200) {
+      if (payload.code === 401) {
+        clearAuth()
+        router.push('/login')
+      }
       ElMessage.error(payload.message || '请求失败')
       return Promise.reject(new Error(payload.message || '请求失败'))
     }
