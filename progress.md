@@ -1,0 +1,58 @@
+# Progress Log
+
+## 2026-07-01
+
+- Created persistent plan files for full-stack 物业管理系统 development.
+- Expanded schema and seed data for all required property-management modules.
+- Added backend entities, mappers, services, and controllers for dashboard, residents, properties, repairs, billing, parking, notices, and system users.
+- Replaced frontend mock usage with API calls for all required pages.
+- Added real system-user status update interaction through backend PATCH endpoint.
+- Fixed dashboard API failure caused by an H2 SQL alias conflict around `value`; changed grouped count alias to `item_count` and normalized the response in service code.
+- Ran backend verification: `cd backend; .\mvnw.cmd -q test` passed.
+- Ran frontend verification: `cd frontend; npm.cmd run build` passed. Build emitted third-party Rolldown annotation/chunk warnings only; no failure.
+- Restarted backend from the correct project path on `http://127.0.0.1:8080`.
+- Restarted frontend from the correct project path on `http://127.0.0.1:5173`.
+- Verified login with `admin / 123456`.
+- Verified module APIs:
+  - `/api/dashboard` returned `code=200`
+  - `/api/residents` returned `code=200`
+  - `/api/properties` returned `code=200`
+  - `/api/repairs` returned `code=200`
+  - `/api/billing` returned `code=200`
+  - `/api/parking` returned `code=200`
+  - `/api/notices` returned `code=200`
+  - `/api/system-users` returned `code=200`
+- Updated README with current startup steps, demo account, database details, module list, and verification results.
+- Added interactive button flows for the management demo:
+  - Residents: search/filter, create, view detail, edit, enable/disable, CSV export.
+  - Repairs: status filter, create repair order, CSV export.
+  - Notices: publish new notice/activity.
+  - System users: role configuration dialog, create account, enable/freeze account.
+  - Top bar: notification drawer and search feedback.
+- Added backend write APIs for residents, repairs, notices, and system users.
+- Verified new write APIs with authenticated HTTP requests: resident, repair, notice, and system-user creation all returned `code=200`.
+- Rebuilt frontend and reran backend tests successfully after button-flow work.
+- Restarted backend on `http://127.0.0.1:8080` and frontend on `http://127.0.0.1:5173`.
+- Refined the frontend UI from a rough demo into a cleaner enterprise admin interface:
+  - Rebuilt global layout styling, sidebar, topbar, cards, tables, dialogs, buttons, and form spacing.
+  - Reworked dashboard into an operations cockpit with hero summary, KPI strip, trend panel, work-order distribution, todos, and announcements.
+  - Reworked residents, repairs, and billing into clearer data-management pages with summary metrics and denser tables.
+  - Cleaned properties, parking, notices, and system users pages for consistent labels, table hierarchy, and dialog layout.
+  - Confirmed frontend build passes and restarted Vite with a clean error log.
+- Completed the next management-system feature batch from the classroom roadmap:
+  - Repairs: added real work-order progress flow for dispatching, processing, completion, detail view, status filtering, and statistics.
+  - Billing: added bill creation, payment confirmation, overdue marking, resident/period/status filtering, and payment statistics.
+  - Properties: added room data model, room seed data, room list, room status management, resident binding, building create/edit, and occupancy statistics.
+  - System users: added role statistics, role presets for admin/finance/repair/property staff, user edit, permission-scope updates, and enable/disable flow.
+  - Added backend write APIs for buildings, rooms, repair progress, billing, and system-user updates.
+  - Verified backend tests and frontend production build both pass.
+  - Verified new authenticated APIs returned `code=200` for properties with rooms, repair progress update, bill create/pay, room binding, and system-user update.
+  - Restarted backend on `http://127.0.0.1:8080` and frontend on `http://127.0.0.1:5173`.
+- Added dashboard linkage for project demonstration:
+  - Rebuilt dashboard statistics so they are calculated from resident, room, bill, repair, parking, notice, and system-user data.
+  - Added a 6-step demo flow: create resident, bind room, create bill, confirm payment, create repair, complete repair.
+  - Added module linkage cards showing record counts for residents, rooms, billing, repairs, notices, and system users.
+  - Fixed dashboard-related mapper statistics for paid bills, pending repairs, and room occupancy statuses.
+  - Rebuilt the dashboard page with clear Chinese labels, live refresh, demo guidance, module linkage, revenue trend, work-order distribution, and recent notices.
+  - Verified backend tests and frontend build pass, then restarted backend and frontend.
+  - Verified authenticated `GET /api/dashboard` returns `code=200` with 6 stats, 6 demo-flow items, and 6 module-health items.

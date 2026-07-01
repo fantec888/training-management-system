@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+target/
+build/
+
+# Local database and runtime data
+backend/data/
+*.db
+*.mv.db
+*.trace.db
+
+# Logs
+*.log
+*.err.log
+logs/
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Environment overrides
+*.local
+.env
+.env.*
