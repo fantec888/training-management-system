@@ -7,6 +7,7 @@ import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.SysUser;
 import com.training.management.service.AuthService;
 import com.training.management.util.JwtUtil;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,13 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new BusinessException(401, "未登录或登录状态已失效");
         }
 
-        String username = jwtUtil.parseUsername(token.substring(7));
+        String username;
+        try {
+            username = jwtUtil.parseUsername(token.substring(7));
+        } catch (JwtException | IllegalArgumentException exception) {
+            throw new BusinessException(401, "登录状态已失效，请重新登录");
+        }
+
         SysUser user = authService.loadEnabledUser(username);
         RequestContext.setCurrentUser(user);
         checkRole(handler, user);
