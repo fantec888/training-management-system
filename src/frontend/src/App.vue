@@ -58,9 +58,9 @@
             class="top-search"
             placeholder="搜索住户、工单、账单"
             :prefix-icon="Search"
-            @keyup.enter="showSearchTip"
+            @keyup.enter="handleGlobalSearch"
           />
-          <el-badge :value="4" class="notification-badge">
+          <el-badge :value="notifications.length" :hidden="!notifications.length" class="notification-badge">
             <el-button circle plain @click="noticeVisible = true">
               <el-icon><Bell /></el-icon>
             </el-button>
@@ -82,13 +82,20 @@
     </el-container>
 
     <el-drawer v-model="noticeVisible" title="消息通知" size="360px">
-      <div class="notice-stack">
-        <div v-for="item in notifications" :key="item.title" class="notice-item">
+      <div v-if="notifications.length" class="notice-stack">
+        <button
+          v-for="item in notifications"
+          :key="item.title"
+          class="notice-item notice-action"
+          type="button"
+          @click="openNotification(item)"
+        >
           <strong>{{ item.title }}</strong>
           <span>{{ item.content }}</span>
           <el-tag size="small" :type="item.type" effect="plain">{{ item.level }}</el-tag>
-        </div>
+        </button>
       </div>
+      <el-empty v-else description="暂无新的消息提醒" />
     </el-drawer>
   </el-container>
 </template>
@@ -135,11 +142,21 @@ const visibleMenuItems = computed(() => {
   return menuItems.filter((item) => canAccessModule(user, item.module))
 })
 
-const notifications = [
-  { title: '高优先级工单待处理', content: '地下车库排风异常，请工程组优先跟进。', level: '工单', type: 'danger' },
-  { title: '本月账单催缴', content: '仍有部分账单未缴费，建议财务发起提醒。', level: '收费', type: 'warning' },
-  { title: '公告触达完成', content: '7 月供水管道检修通知已推送给全体住户。', level: '公告', type: 'success' },
-  { title: '楼栋巡检提醒', content: 'C1 楼栋今日需要完成公共区域巡检。', level: '巡检', type: 'info' },
+const notifications = ref([
+  { title: '高优先级工单待处理', content: '地下车库排风异常，请工程组优先跟进。', level: '工单', type: 'danger', path: '/repairs' },
+  { title: '本月账单催缴', content: '仍有部分账单未缴费，建议财务发起提醒。', level: '收费', type: 'warning', path: '/billing' },
+  { title: '公告触达完成', content: '7 月供水管道检修通知已推送给全体住户。', level: '公告', type: 'success', path: '/notices' },
+  { title: '楼栋巡检提醒', content: 'C1 楼栋今日需要完成公共区域巡检。', level: '巡检', type: 'info', path: '/properties' },
+])
+
+const searchTargets = [
+  { module: 'residents', path: '/residents', label: '住户管理', keywords: ['住户', '业主', '租户', '房号', '房间', '姓名', '手机', '电话'] },
+  { module: 'properties', path: '/properties', label: '楼栋房屋', keywords: ['楼栋', '房屋', '房源', '入住', '空置', '装修'] },
+  { module: 'repairs', path: '/repairs', label: '报修工单', keywords: ['工单', '报修', '维修', '派单', '处理', '漏水', '门禁'] },
+  { module: 'billing', path: '/billing', label: '收费管理', keywords: ['账单', '收费', '缴费', '欠费', '逾期', '物业费', '水电'] },
+  { module: 'parking', path: '/parking', label: '停车管理', keywords: ['停车', '车位', '车辆', '车牌', '月租', '临停'] },
+  { module: 'notices', path: '/notices', label: '公告活动', keywords: ['公告', '通知', '活动', '发布', '下架'] },
+  { module: 'system-users', path: '/system-users', label: '系统用户', keywords: ['用户', '账号', '角色', '权限', '管理员'] },
 ]
 
 const currentTitle = computed(() => route.meta.title || '首页仪表盘')
@@ -148,12 +165,33 @@ const currentDescription = computed(
 )
 const avatarText = computed(() => currentUser.value?.realName?.slice(0, 1) || '管')
 
-function showSearchTip() {
-  if (!globalKeyword.value) {
+function handleGlobalSearch() {
+  const keyword = globalKeyword.value.trim()
+  if (!keyword) {
     ElMessage.info('请输入搜索关键词')
     return
   }
-  ElMessage.success(`已记录搜索关键词：${globalKeyword.value}`)
+
+  const target = searchTargets.find((item) => (
+    canAccessModule(currentUser.value, item.module)
+    && item.keywords.some((word) => keyword.includes(word))
+  ))
+    || visibleMenuItems.value.find((item) => item.path !== '/')
+
+  if (!target) {
+    ElMessage.warning('当前账号没有可跳转的业务页面')
+    return
+  }
+
+  router.push({ path: target.path, query: { keyword } })
+  ElMessage.success(`已跳转到${target.label || '对应页面'}：${keyword}`)
+}
+
+function openNotification(item) {
+  notifications.value = notifications.value.filter((current) => current.title !== item.title)
+  noticeVisible.value = false
+  router.push(item.path)
+  ElMessage.success(`已进入${item.level}页面，消息已处理`)
 }
 
 function logout() {

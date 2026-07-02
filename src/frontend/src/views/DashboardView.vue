@@ -9,7 +9,6 @@
         </p>
         <div class="command-actions">
           <el-button type="primary" @click="refreshDashboard">刷新数据</el-button>
-          <el-button @click="showDemoTip">演示说明</el-button>
         </div>
       </div>
 
@@ -39,29 +38,6 @@
         </div>
       </el-card>
     </div>
-
-    <el-card shadow="never" class="panel-card">
-      <template #header>
-        <div class="panel-header">
-          <div>
-            <strong>项目演示闭环</strong>
-            <span>按这个顺序演示，能讲清楚管理系统如何处理数据和业务流程</span>
-          </div>
-        </div>
-      </template>
-
-      <div class="flow-grid" v-if="demoFlow.length">
-        <div v-for="item in demoFlow" :key="item.step" class="flow-item">
-          <div class="flow-step">{{ item.step }}</div>
-          <div>
-            <strong>{{ item.title }}</strong>
-            <span>{{ item.description }}</span>
-            <el-tag size="small" effect="plain">{{ item.metric }}</el-tag>
-          </div>
-        </div>
-      </div>
-      <el-empty v-else description="暂无演示流程" />
-    </el-card>
 
     <div class="dashboard-grid">
       <el-card shadow="never" class="panel-card">
@@ -167,7 +143,6 @@ const stats = ref(dashboardFallback.stats)
 const revenueTrend = ref([])
 const workOrderTrend = ref([])
 const announcements = ref([])
-const demoFlow = ref([])
 const moduleHealth = ref([])
 
 async function loadDashboard() {
@@ -183,7 +158,6 @@ async function loadDashboard() {
     revenueTrend.value = data.revenueTrend || []
     workOrderTrend.value = data.workOrderTrend || []
     announcements.value = data.announcements || []
-    demoFlow.value = data.demoFlow || []
     moduleHealth.value = data.moduleHealth || []
   } catch (error) {
     ElMessage.warning('仪表盘数据暂时无法加载，已显示默认状态')
@@ -197,10 +171,6 @@ async function loadDashboard() {
 async function refreshDashboard() {
   await loadDashboard()
   ElMessage.success('仪表盘数据已刷新')
-}
-
-function showDemoTip() {
-  ElMessage.info('建议演示顺序：新增住户 -> 绑定房屋 -> 生成账单 -> 确认缴费 -> 新建报修 -> 处理完成 -> 返回首页刷新统计')
 }
 
 onMounted(loadDashboard)

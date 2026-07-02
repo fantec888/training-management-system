@@ -37,7 +37,6 @@ public class DashboardService {
         data.put("workOrderTrend", buildWorkOrderTrend());
         data.put("todoList", dashboardMapper.findTodoItems());
         data.put("announcements", noticeMapper.findAll().stream().limit(4).toList());
-        data.put("demoFlow", buildDemoFlow());
         data.put("moduleHealth", buildModuleHealth());
         return data;
     }
@@ -88,17 +87,6 @@ public class DashboardService {
         );
     }
 
-    private List<Map<String, Object>> buildDemoFlow() {
-        return List.of(
-            flow("1", "新增住户", "在住户管理中维护业主或租户档案", "住户总数"),
-            flow("2", "绑定房屋", "在楼栋房屋中把住户绑定到房间", "房屋入住率"),
-            flow("3", "生成账单", "在收费管理中新建物业费或水电费账单", "本月应收"),
-            flow("4", "确认缴费", "将账单状态改为已缴费", "收缴率"),
-            flow("5", "新建报修", "在报修工单中新建维修事项", "待处理工单"),
-            flow("6", "处理完成", "派单、处理中、已完成形成闭环", "工单统计")
-        );
-    }
-
     private List<Map<String, Object>> buildModuleHealth() {
         return List.of(
             health("住户管理", residentMapper.countAll(), "住户档案和认证状态"),
@@ -116,15 +104,6 @@ public class DashboardService {
         item.put("value", value);
         item.put("trend", trend);
         item.put("detail", detail);
-        return item;
-    }
-
-    private Map<String, Object> flow(String step, String title, String description, String metric) {
-        Map<String, Object> item = new LinkedHashMap<>();
-        item.put("step", step);
-        item.put("title", title);
-        item.put("description", description);
-        item.put("metric", metric);
         return item;
     }
 
