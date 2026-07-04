@@ -645,6 +645,12 @@ select {
   line-height: 1.45;
 }
 
+.table-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 4px 0;
+}
+
 .el-button {
   border-radius: 7px;
   font-weight: 600;

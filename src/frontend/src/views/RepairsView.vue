@@ -49,7 +49,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredRepairs" v-if="filteredRepairs.length">
+      <el-table :data="pagedRepairs" v-if="filteredRepairs.length">
         <el-table-column prop="code" label="工单编号" width="160" fixed="left" />
         <el-table-column prop="title" label="问题描述" min-width="220" />
         <el-table-column prop="area" label="发生位置" width="150" />
@@ -77,6 +77,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredRepairs.length">
+        <el-pagination
+          v-model:current-page="repairPage"
+          v-model:page-size="repairPageSize"
+          :page-sizes="repairPageSizes"
+          :total="repairTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
       <el-empty v-else description="暂无工单数据" />
     </el-card>
 
@@ -155,6 +164,7 @@ import { createRepair, deleteRepair, fetchRepairs, updateRepairProgress } from '
 import { repairsFallback } from '../data/mock'
 import { exportCsv } from '../utils/exportCsv'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const statusOptions = ['全部工单', '待处理', '处理中', '已完成']
@@ -172,6 +182,13 @@ const filteredRepairs = computed(() => {
   if (statusFilter.value === '全部工单') return repairs.value
   return repairs.value.filter((item) => item.status === statusFilter.value)
 })
+const {
+  page: repairPage,
+  pageSize: repairPageSize,
+  pageSizes: repairPageSizes,
+  total: repairTotal,
+  records: pagedRepairs,
+} = useClientPagination(filteredRepairs)
 
 const highPriorityCount = computed(() => repairs.value.filter((item) => item.priority === '高').length)
 const processingCount = computed(() => repairs.value.filter((item) => item.status === '处理中').length)

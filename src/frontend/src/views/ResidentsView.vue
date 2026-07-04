@@ -59,7 +59,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredResidents" v-if="filteredResidents.length">
+      <el-table :data="pagedResidents" v-if="filteredResidents.length">
         <el-table-column prop="name" label="姓名" width="120" fixed="left" />
         <el-table-column prop="identityType" label="身份" width="90" />
         <el-table-column prop="phone" label="联系电话" width="140" />
@@ -97,6 +97,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredResidents.length">
+        <el-pagination
+          v-model:current-page="residentPage"
+          v-model:page-size="residentPageSize"
+          :page-sizes="residentPageSizes"
+          :total="residentTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
       <el-empty v-else description="暂无住户数据" />
     </el-card>
 
@@ -167,6 +176,7 @@ import {
 import { residentsFallback } from '../data/mock'
 import { exportCsv } from '../utils/exportCsv'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const residents = ref(residentsFallback)
@@ -188,6 +198,13 @@ const filteredResidents = computed(() => residents.value.filter((item) => {
   const matchVerify = verifyFilter.value === 'all' || item.verifiedStatus === verifyFilter.value
   return matchKeyword && matchIdentity && matchVerify
 }))
+const {
+  page: residentPage,
+  pageSize: residentPageSize,
+  pageSizes: residentPageSizes,
+  total: residentTotal,
+  records: pagedResidents,
+} = useClientPagination(filteredResidents)
 
 const verifiedCount = computed(() => residents.value.filter((item) => item.verifiedStatus === '已认证').length)
 const vehicleCount = computed(() => residents.value.reduce((sum, item) => sum + Number(item.vehicles || 0), 0))

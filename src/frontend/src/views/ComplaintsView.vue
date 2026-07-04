@@ -36,7 +36,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredComplaints" v-loading="loading">
+      <el-table :data="pagedComplaints" v-loading="loading">
         <el-table-column prop="code" label="编号" width="150" fixed="left" />
         <el-table-column prop="residentName" label="住户" width="110" />
         <el-table-column prop="category" label="分类" width="110" />
@@ -56,6 +56,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredComplaints.length">
+        <el-pagination
+          v-model:current-page="complaintPage"
+          v-model:page-size="complaintPageSize"
+          :page-sizes="complaintPageSizes"
+          :total="complaintTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
     </el-card>
 
     <el-dialog v-model="formVisible" title="提交投诉建议" width="560px">
@@ -112,6 +121,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createComplaint, deleteComplaint, fetchComplaints, replyComplaint } from '../api/property'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const complaints = ref([])
@@ -132,6 +142,13 @@ const filteredComplaints = computed(() => complaints.value.filter((item) => {
   const statusMatched = !statusFilter.value || item.status === statusFilter.value
   return keywordMatched && statusMatched
 }))
+const {
+  page: complaintPage,
+  pageSize: complaintPageSize,
+  pageSizes: complaintPageSizes,
+  total: complaintTotal,
+  records: pagedComplaints,
+} = useClientPagination(filteredComplaints)
 const stats = computed(() => [
   { label: '全部反馈', value: complaints.value.length },
   { label: '待处理', value: complaints.value.filter((item) => item.status === '待处理').length },

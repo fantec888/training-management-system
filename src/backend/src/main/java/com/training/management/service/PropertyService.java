@@ -69,12 +69,16 @@ public class PropertyService {
     }
 
     public Community createCommunity(Community community) {
+        requireText(community.getName(), "小区名称不能为空");
+        requireText(community.getAddress(), "小区地址不能为空");
         fillCommunityDefaults(community);
         communityMapper.insert(community);
         return community;
     }
 
     public Community updateCommunity(Long id, Community community) {
+        requireText(community.getName(), "小区名称不能为空");
+        requireText(community.getAddress(), "小区地址不能为空");
         community.setId(id);
         fillCommunityDefaults(community);
         communityMapper.update(community);
@@ -99,12 +103,20 @@ public class PropertyService {
     }
 
     public Resident createResident(Resident resident) {
+        requireText(resident.getName(), "住户姓名不能为空");
+        requireText(resident.getPhone(), "住户电话不能为空");
+        requireText(resident.getBuilding(), "楼栋不能为空");
+        requireText(resident.getRoomNo(), "房号不能为空");
         fillResidentDefaults(resident);
         residentMapper.insert(resident);
         return resident;
     }
 
     public Resident updateResident(Long id, Resident resident) {
+        requireText(resident.getName(), "住户姓名不能为空");
+        requireText(resident.getPhone(), "住户电话不能为空");
+        requireText(resident.getBuilding(), "楼栋不能为空");
+        requireText(resident.getRoomNo(), "房号不能为空");
         resident.setId(id);
         fillResidentDefaults(resident);
         residentMapper.update(resident);
@@ -143,12 +155,14 @@ public class PropertyService {
     }
 
     public Building createBuilding(Building building) {
+        requireText(building.getName(), "楼栋名称不能为空");
         fillBuildingDefaults(building);
         buildingMapper.insert(building);
         return building;
     }
 
     public Building updateBuilding(Long id, Building building) {
+        requireText(building.getName(), "楼栋名称不能为空");
         building.setId(id);
         fillBuildingDefaults(building);
         buildingMapper.update(building);
@@ -160,12 +174,18 @@ public class PropertyService {
     }
 
     public Room createRoom(Room room) {
+        requireText(room.getBuildingName(), "楼栋不能为空");
+        requireText(room.getUnitNo(), "单元不能为空");
+        requireText(room.getRoomNo(), "房号不能为空");
         fillRoomDefaults(room);
         roomMapper.insert(room);
         return room;
     }
 
     public Room updateRoom(Long id, Room room) {
+        requireText(room.getBuildingName(), "楼栋不能为空");
+        requireText(room.getUnitNo(), "单元不能为空");
+        requireText(room.getRoomNo(), "房号不能为空");
         room.setId(id);
         fillRoomDefaults(room);
         roomMapper.update(room);
@@ -188,6 +208,8 @@ public class PropertyService {
     }
 
     public RepairOrder createRepair(RepairOrder repairOrder) {
+        requireText(repairOrder.getTitle(), "报修问题不能为空");
+        requireText(repairOrder.getArea(), "报修位置不能为空");
         if (!StringUtils.hasText(repairOrder.getCode())) {
             repairOrder.setCode("WX" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now()));
         }
@@ -225,6 +247,10 @@ public class PropertyService {
     }
 
     public Complaint createComplaint(Complaint complaint) {
+        requireText(complaint.getResidentName(), "投诉人不能为空");
+        requireText(complaint.getPhone(), "联系电话不能为空");
+        requireText(complaint.getTitle(), "投诉标题不能为空");
+        requireText(complaint.getContent(), "投诉内容不能为空");
         if (!StringUtils.hasText(complaint.getCode())) {
             complaint.setCode("TS" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now()));
         }
@@ -273,6 +299,9 @@ public class PropertyService {
     }
 
     public Bill createBill(Bill bill) {
+        requireText(bill.getResidentName(), "缴费住户不能为空");
+        requireText(bill.getHouse(), "房号不能为空");
+        requireText(bill.getFeeType(), "费用类型不能为空");
         if (!StringUtils.hasText(bill.getStatus())) {
             bill.setStatus("待缴费");
         }
@@ -303,12 +332,14 @@ public class PropertyService {
     }
 
     public FeeItem createFeeItem(FeeItem feeItem) {
+        requireText(feeItem.getName(), "费用项目名称不能为空");
         fillFeeItemDefaults(feeItem);
         feeItemMapper.insert(feeItem);
         return feeItem;
     }
 
     public FeeItem updateFeeItem(Long id, FeeItem feeItem) {
+        requireText(feeItem.getName(), "费用项目名称不能为空");
         feeItem.setId(id);
         fillFeeItemDefaults(feeItem);
         feeItemMapper.update(feeItem);
@@ -320,6 +351,8 @@ public class PropertyService {
     }
 
     public PaymentRecord createPayment(PaymentRecord paymentRecord) {
+        requireText(paymentRecord.getPayerName(), "缴费人不能为空");
+        requireText(paymentRecord.getHouse(), "房号不能为空");
         if (paymentRecord.getPaidAt() == null) {
             paymentRecord.setPaidAt(LocalDateTime.now());
         }
@@ -361,6 +394,9 @@ public class PropertyService {
     }
 
     public Notice createNotice(Notice notice) {
+        requireText(notice.getTitle(), "公告标题不能为空");
+        requireText(notice.getAudience(), "公告范围不能为空");
+        requireText(notice.getPublisher(), "发布部门不能为空");
         if (notice.getPublishTime() == null) {
             notice.setPublishTime(LocalDateTime.now());
         }
@@ -388,6 +424,8 @@ public class PropertyService {
         if (!StringUtils.hasText(user.getUsername())) {
             throw new BusinessException(400, "账号不能为空");
         }
+        requireText(user.getRealName(), "姓名不能为空");
+        requireText(user.getRoleCode(), "角色不能为空");
         if (sysUserMapper.findByUsername(user.getUsername()) != null) {
             throw new BusinessException(400, "账号已存在");
         }
@@ -400,6 +438,8 @@ public class PropertyService {
     }
 
     public SysUser updateSystemUser(Long id, SysUser user) {
+        requireText(user.getRealName(), "姓名不能为空");
+        requireText(user.getRoleCode(), "角色不能为空");
         user.setId(id);
         fillUserDefaults(user);
         sysUserMapper.update(user);

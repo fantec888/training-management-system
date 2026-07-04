@@ -22,7 +22,7 @@
         </div>
       </template>
 
-      <el-table :data="notices.list" v-if="notices.list.length">
+      <el-table :data="pagedNotices" v-if="notices.list.length">
         <el-table-column prop="title" label="标题" min-width="260" fixed="left" />
         <el-table-column prop="category" label="类型" width="100" />
         <el-table-column prop="audience" label="触达范围" width="140" />
@@ -44,6 +44,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="notices.list.length">
+        <el-pagination
+          v-model:current-page="noticePage"
+          v-model:page-size="noticePageSize"
+          :page-sizes="noticePageSizes"
+          :total="noticeTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
       <el-empty v-else description="暂无公告活动数据" />
     </el-card>
 
@@ -87,12 +96,21 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { createNotice, deleteNotice, fetchNotices, updateNoticeStatus } from '../api/property'
 import { noticesFallback } from '../data/mock'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const notices = ref(noticesFallback)
 const formVisible = ref(false)
 const form = reactive(defaultNotice())
 const currentUser = computed(() => getUser())
+const noticeList = computed(() => notices.value.list || [])
+const {
+  page: noticePage,
+  pageSize: noticePageSize,
+  pageSizes: noticePageSizes,
+  total: noticeTotal,
+  records: pagedNotices,
+} = useClientPagination(noticeList)
 
 function canDo(permissionCode) {
   return hasPermission(currentUser.value, permissionCode)

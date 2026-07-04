@@ -37,7 +37,7 @@
         </div>
       </template>
 
-      <el-table :data="properties.buildings" v-if="properties.buildings.length">
+      <el-table :data="pagedBuildings" v-if="properties.buildings.length">
         <el-table-column prop="name" label="楼栋" width="100" fixed="left" />
         <el-table-column prop="floors" label="楼层数" width="100" />
         <el-table-column prop="units" label="单元数" width="100" />
@@ -58,6 +58,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="properties.buildings.length">
+        <el-pagination
+          v-model:current-page="buildingPage"
+          v-model:page-size="buildingPageSize"
+          :page-sizes="buildingPageSizes"
+          :total="buildingTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
       <el-empty v-else description="暂无楼栋数据" />
     </el-card>
 
@@ -71,7 +80,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredRooms" v-if="filteredRooms.length">
+      <el-table :data="pagedRooms" v-if="filteredRooms.length">
         <el-table-column prop="buildingName" label="楼栋" width="90" fixed="left" />
         <el-table-column prop="unitNo" label="单元" width="100" />
         <el-table-column prop="roomNo" label="房号" width="100" />
@@ -93,6 +102,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredRooms.length">
+        <el-pagination
+          v-model:current-page="roomPage"
+          v-model:page-size="roomPageSize"
+          :page-sizes="roomPageSizes"
+          :total="roomTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
       <el-empty v-else description="暂无房屋数据" />
     </el-card>
 
@@ -193,6 +211,7 @@ import {
 } from '../api/property'
 import { propertiesFallback } from '../data/mock'
 import { toPercent } from '../utils/format'
+import { useClientPagination } from '../utils/pagination'
 
 const properties = ref({ ...propertiesFallback, rooms: [] })
 const activeTab = ref('楼栋列表')
@@ -209,6 +228,21 @@ const filteredRooms = computed(() => {
   if (!roomStatusFilter.value) return rooms
   return rooms.filter((item) => item.status === roomStatusFilter.value)
 })
+const filteredBuildings = computed(() => properties.value.buildings || [])
+const {
+  page: buildingPage,
+  pageSize: buildingPageSize,
+  pageSizes: buildingPageSizes,
+  total: buildingTotal,
+  records: pagedBuildings,
+} = useClientPagination(filteredBuildings)
+const {
+  page: roomPage,
+  pageSize: roomPageSize,
+  pageSizes: roomPageSizes,
+  total: roomTotal,
+  records: pagedRooms,
+} = useClientPagination(filteredRooms)
 
 async function loadProperties() {
   try {

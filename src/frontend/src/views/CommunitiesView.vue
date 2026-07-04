@@ -48,7 +48,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredCommunities" v-loading="loading">
+      <el-table :data="pagedCommunities" v-loading="loading">
         <el-table-column prop="name" label="小区名称" width="140" fixed="left" />
         <el-table-column prop="address" label="地址" min-width="220" />
         <el-table-column prop="propertyCompany" label="物业公司" width="180" />
@@ -68,6 +68,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredCommunities.length">
+        <el-pagination
+          v-model:current-page="communityPage"
+          v-model:page-size="communityPageSize"
+          :page-sizes="communityPageSizes"
+          :total="communityTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
     </el-card>
 
     <el-dialog v-model="formVisible" :title="form.id ? '编辑小区' : '新增小区'" width="620px">
@@ -102,6 +111,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createCommunity, deleteCommunity, fetchCommunities, updateCommunity } from '../api/property'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const communities = ref([])
@@ -115,6 +125,13 @@ const filteredCommunities = computed(() => communities.value.filter((item) => {
   const text = `${item.name}${item.address}${item.manager}${item.propertyCompany}`
   return !keyword.value || text.includes(keyword.value)
 }))
+const {
+  page: communityPage,
+  pageSize: communityPageSize,
+  pageSizes: communityPageSizes,
+  total: communityTotal,
+  records: pagedCommunities,
+} = useClientPagination(filteredCommunities)
 const totalBuildings = computed(() => communities.value.reduce((sum, item) => sum + Number(item.totalBuildings || 0), 0))
 const totalRooms = computed(() => communities.value.reduce((sum, item) => sum + Number(item.totalRooms || 0), 0))
 const normalCount = computed(() => communities.value.filter((item) => item.status === '正常').length)

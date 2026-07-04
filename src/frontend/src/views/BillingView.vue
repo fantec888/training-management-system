@@ -57,7 +57,7 @@
         </div>
       </template>
 
-      <el-table :data="filteredBills" v-loading="loading">
+      <el-table :data="pagedBills" v-loading="loading">
         <el-table-column prop="residentName" label="住户" width="120" fixed="left" />
         <el-table-column prop="house" label="房号" width="120" />
         <el-table-column prop="feeType" label="费用类型" width="130" />
@@ -79,6 +79,15 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="table-pagination" v-if="filteredBills.length">
+        <el-pagination
+          v-model:current-page="billPage"
+          v-model:page-size="billPageSize"
+          :page-sizes="billPageSizes"
+          :total="billTotal"
+          layout="total, sizes, prev, pager, next, jumper"
+        />
+      </div>
     </el-card>
 
     <el-row :gutter="12">
@@ -214,6 +223,7 @@ import {
 import { billsFallback } from '../data/mock'
 import { toCurrency } from '../utils/format'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const billing = ref({ ...billsFallback, feeItems: [], payments: [] })
@@ -236,6 +246,13 @@ const filteredBills = computed(() => billing.value.bills.filter((bill) => {
   const periodMatched = !periodFilter.value || bill.billPeriod.includes(periodFilter.value)
   return keywordMatched && statusMatched && periodMatched
 }))
+const {
+  page: billPage,
+  pageSize: billPageSize,
+  pageSizes: billPageSizes,
+  total: billTotal,
+  records: pagedBills,
+} = useClientPagination(filteredBills)
 
 const collectionRate = computed(() => {
   const receivable = Number(billing.value.summary.receivable || 0)

@@ -26,7 +26,7 @@
 
       <el-tabs v-model="activeTab" class="rbac-tabs">
         <el-tab-pane label="用户管理" name="users">
-          <el-table :data="systemUsers" v-loading="loading">
+          <el-table :data="pagedSystemUsers" v-loading="loading">
             <el-table-column prop="realName" label="姓名" width="120" fixed="left" />
             <el-table-column prop="username" label="账号" width="140" />
             <el-table-column label="主角色" width="150">
@@ -54,10 +54,19 @@
               </template>
             </el-table-column>
           </el-table>
+          <div class="table-pagination" v-if="systemUsers.length">
+            <el-pagination
+              v-model:current-page="userPage"
+              v-model:page-size="userPageSize"
+              :page-sizes="userPageSizes"
+              :total="userTotal"
+              layout="total, sizes, prev, pager, next, jumper"
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane label="角色管理" name="roles">
-          <el-table :data="roles" v-loading="loading">
+          <el-table :data="pagedRoles" v-loading="loading">
             <el-table-column prop="roleName" label="角色名称" width="150" />
             <el-table-column prop="roleCode" label="角色编码" width="180" />
             <el-table-column prop="description" label="说明" min-width="260" />
@@ -75,10 +84,19 @@
               </template>
             </el-table-column>
           </el-table>
+          <div class="table-pagination" v-if="roles.length">
+            <el-pagination
+              v-model:current-page="rolePage"
+              v-model:page-size="rolePageSize"
+              :page-sizes="rolePageSizes"
+              :total="roleTotal"
+              layout="total, sizes, prev, pager, next, jumper"
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane label="菜单权限" name="permissions">
-          <el-table :data="permissions" row-key="id" v-loading="loading">
+          <el-table :data="pagedPermissions" row-key="id" v-loading="loading">
             <el-table-column prop="permissionName" label="权限名称" width="170" />
             <el-table-column prop="permissionCode" label="权限编码" min-width="230" />
             <el-table-column label="类型" width="100">
@@ -98,6 +116,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <div class="table-pagination" v-if="permissions.length">
+            <el-pagination
+              v-model:current-page="permissionPage"
+              v-model:page-size="permissionPageSize"
+              :page-sizes="permissionPageSizes"
+              :total="permissionTotal"
+              layout="total, sizes, prev, pager, next, jumper"
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane label="授权分配" name="assign">
@@ -221,6 +248,7 @@ import {
   updateSystemUserStatus,
 } from '../api/property'
 import { getUser } from '../utils/auth'
+import { useClientPagination } from '../utils/pagination'
 import { hasPermission } from '../utils/roles'
 
 const activeTab = ref('users')
@@ -246,6 +274,27 @@ const roleStats = computed(() => roles.value.map((role) => ({
   ...role,
   count: systemUsers.value.filter((user) => user.roleCode === role.roleCode).length,
 })))
+const {
+  page: userPage,
+  pageSize: userPageSize,
+  pageSizes: userPageSizes,
+  total: userTotal,
+  records: pagedSystemUsers,
+} = useClientPagination(systemUsers)
+const {
+  page: rolePage,
+  pageSize: rolePageSize,
+  pageSizes: rolePageSizes,
+  total: roleTotal,
+  records: pagedRoles,
+} = useClientPagination(roles)
+const {
+  page: permissionPage,
+  pageSize: permissionPageSize,
+  pageSizes: permissionPageSizes,
+  total: permissionTotal,
+  records: pagedPermissions,
+} = useClientPagination(permissions, { pageSize: 10, pageSizes: [10, 20, 50] })
 
 function canDo(code) {
   return hasPermission(currentUser.value, code)
