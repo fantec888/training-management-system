@@ -16,16 +16,24 @@ import com.training.management.common.PageResult;
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
+import com.training.management.domain.entity.Community;
+import com.training.management.domain.entity.Complaint;
+import com.training.management.domain.entity.FeeItem;
 import com.training.management.domain.entity.Notice;
 import com.training.management.domain.entity.ParkingVehicle;
+import com.training.management.domain.entity.PaymentRecord;
 import com.training.management.domain.entity.RepairOrder;
 import com.training.management.domain.entity.Resident;
 import com.training.management.domain.entity.Room;
 import com.training.management.domain.entity.SysUser;
 import com.training.management.mapper.BillMapper;
 import com.training.management.mapper.BuildingMapper;
+import com.training.management.mapper.CommunityMapper;
+import com.training.management.mapper.ComplaintMapper;
+import com.training.management.mapper.FeeItemMapper;
 import com.training.management.mapper.NoticeMapper;
 import com.training.management.mapper.ParkingVehicleMapper;
+import com.training.management.mapper.PaymentRecordMapper;
 import com.training.management.mapper.RepairOrderMapper;
 import com.training.management.mapper.ResidentMapper;
 import com.training.management.mapper.RoomMapper;
@@ -39,10 +47,14 @@ import org.springframework.util.StringUtils;
 public class PropertyService {
 
     private final ResidentMapper residentMapper;
+    private final CommunityMapper communityMapper;
     private final BuildingMapper buildingMapper;
     private final RoomMapper roomMapper;
     private final RepairOrderMapper repairOrderMapper;
+    private final ComplaintMapper complaintMapper;
     private final BillMapper billMapper;
+    private final FeeItemMapper feeItemMapper;
+    private final PaymentRecordMapper paymentRecordMapper;
     private final ParkingVehicleMapper parkingVehicleMapper;
     private final NoticeMapper noticeMapper;
     private final SysUserMapper sysUserMapper;
@@ -50,6 +62,27 @@ public class PropertyService {
 
     public List<Resident> listResidents() {
         return residentMapper.findAll();
+    }
+
+    public List<Community> listCommunities() {
+        return communityMapper.findAll();
+    }
+
+    public Community createCommunity(Community community) {
+        fillCommunityDefaults(community);
+        communityMapper.insert(community);
+        return community;
+    }
+
+    public Community updateCommunity(Long id, Community community) {
+        community.setId(id);
+        fillCommunityDefaults(community);
+        communityMapper.update(community);
+        return community;
+    }
+
+    public void deleteCommunity(Long id) {
+        communityMapper.deleteById(id);
     }
 
     public PageResult<Resident> pageResidents(int pageNum, int pageSize) {
@@ -103,6 +136,7 @@ public class PropertyService {
             summary("入住率", occupancyRate + "%"),
             summary("空置房屋", roomMapper.countVacant() + " 套")
         ));
+        data.put("communities", communityMapper.findAll());
         data.put("buildings", buildingMapper.findAll());
         data.put("rooms", roomMapper.findAll());
         return data;
@@ -186,6 +220,43 @@ public class PropertyService {
         repairOrderMapper.deleteById(id);
     }
 
+    public List<Complaint> listComplaints() {
+        return complaintMapper.findAll();
+    }
+
+    public Complaint createComplaint(Complaint complaint) {
+        if (!StringUtils.hasText(complaint.getCode())) {
+            complaint.setCode("TS" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now()));
+        }
+        if (!StringUtils.hasText(complaint.getCategory())) {
+            complaint.setCategory("服务建议");
+        }
+        if (!StringUtils.hasText(complaint.getStatus())) {
+            complaint.setStatus("待处理");
+        }
+        if (complaint.getSubmittedAt() == null) {
+            complaint.setSubmittedAt(LocalDateTime.now());
+        }
+        complaintMapper.insert(complaint);
+        return complaint;
+    }
+
+    public void replyComplaint(Long id, Complaint complaint) {
+        requireText(complaint.getReply(), "投诉回复内容不能为空");
+        complaint.setId(id);
+        if (!StringUtils.hasText(complaint.getHandler())) {
+            complaint.setHandler("客服主管");
+        }
+        if (!StringUtils.hasText(complaint.getStatus())) {
+            complaint.setStatus("已回复");
+        }
+        complaintMapper.updateReply(complaint);
+    }
+
+    public void deleteComplaint(Long id) {
+        complaintMapper.deleteById(id);
+    }
+
     public Map<String, Object> getBilling() {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("summary", Map.of(
@@ -196,6 +267,8 @@ public class PropertyService {
             "overdueCount", billMapper.countByStatus("逾期")
         ));
         data.put("bills", billMapper.findAll());
+        data.put("feeItems", feeItemMapper.findAll());
+        data.put("payments", paymentRecordMapper.findAll());
         return data;
     }
 
@@ -223,6 +296,44 @@ public class PropertyService {
 
     public void deleteBill(Long id) {
         billMapper.deleteById(id);
+    }
+
+    public List<FeeItem> listFeeItems() {
+        return feeItemMapper.findAll();
+    }
+
+    public FeeItem createFeeItem(FeeItem feeItem) {
+        fillFeeItemDefaults(feeItem);
+        feeItemMapper.insert(feeItem);
+        return feeItem;
+    }
+
+    public FeeItem updateFeeItem(Long id, FeeItem feeItem) {
+        feeItem.setId(id);
+        fillFeeItemDefaults(feeItem);
+        feeItemMapper.update(feeItem);
+        return feeItem;
+    }
+
+    public void deleteFeeItem(Long id) {
+        feeItemMapper.deleteById(id);
+    }
+
+    public PaymentRecord createPayment(PaymentRecord paymentRecord) {
+        if (paymentRecord.getPaidAt() == null) {
+            paymentRecord.setPaidAt(LocalDateTime.now());
+        }
+        if (!StringUtils.hasText(paymentRecord.getPaymentMethod())) {
+            paymentRecord.setPaymentMethod("微信支付");
+        }
+        if (!StringUtils.hasText(paymentRecord.getOperator())) {
+            paymentRecord.setOperator("财务专员");
+        }
+        paymentRecordMapper.insert(paymentRecord);
+        if (paymentRecord.getBillId() != null) {
+            billMapper.updateStatus(paymentRecord.getBillId(), "已缴费");
+        }
+        return paymentRecord;
     }
 
     public Map<String, Object> getParking() {
@@ -319,6 +430,24 @@ public class PropertyService {
         }
     }
 
+    private void fillCommunityDefaults(Community community) {
+        if (community.getTotalBuildings() == null) {
+            community.setTotalBuildings(0);
+        }
+        if (community.getTotalRooms() == null) {
+            community.setTotalRooms(0);
+        }
+        if (!StringUtils.hasText(community.getPropertyCompany())) {
+            community.setPropertyCompany("云栖物业服务有限公司");
+        }
+        if (!StringUtils.hasText(community.getManager())) {
+            community.setManager("物业经理");
+        }
+        if (!StringUtils.hasText(community.getStatus())) {
+            community.setStatus("正常");
+        }
+    }
+
     private void fillBuildingDefaults(Building building) {
         if (building.getFloors() == null) {
             building.setFloors(1);
@@ -358,6 +487,21 @@ public class PropertyService {
         }
         if (user.getEnabled() == null) {
             user.setEnabled(true);
+        }
+    }
+
+    private void fillFeeItemDefaults(FeeItem feeItem) {
+        if (!StringUtils.hasText(feeItem.getCategory())) {
+            feeItem.setCategory("物业费");
+        }
+        if (!StringUtils.hasText(feeItem.getBillingCycle())) {
+            feeItem.setBillingCycle("月度");
+        }
+        if (feeItem.getUnitPrice() == null) {
+            feeItem.setUnitPrice(BigDecimal.ZERO);
+        }
+        if (feeItem.getEnabled() == null) {
+            feeItem.setEnabled(true);
         }
     }
 

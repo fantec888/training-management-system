@@ -20,6 +20,22 @@ export function deleteResident(id) {
   return request.delete(`/api/residents/${id}`)
 }
 
+export function fetchCommunities() {
+  return request.get('/api/communities')
+}
+
+export function createCommunity(data) {
+  return request.post('/api/communities', data)
+}
+
+export function updateCommunity(id, data) {
+  return request.put(`/api/communities/${id}`, data)
+}
+
+export function deleteCommunity(id) {
+  return request.delete(`/api/communities/${id}`)
+}
+
 export function fetchProperties() {
   return request.get('/api/properties')
 }
@@ -71,6 +87,22 @@ export function deleteRepair(id) {
   return request.delete(`/api/repairs/${id}`)
 }
 
+export function fetchComplaints() {
+  return request.get('/api/complaints')
+}
+
+export function createComplaint(data) {
+  return request.post('/api/complaints', data)
+}
+
+export function replyComplaint(id, data) {
+  return request.patch(`/api/complaints/${id}/reply`, data)
+}
+
+export function deleteComplaint(id) {
+  return request.delete(`/api/complaints/${id}`)
+}
+
 export function fetchBilling() {
   return request.get('/api/billing')
 }
@@ -85,6 +117,26 @@ export function updateBillStatus(id, status) {
 
 export function deleteBill(id) {
   return request.delete(`/api/billing/${id}`)
+}
+
+export function fetchFeeItems() {
+  return request.get('/api/fee-items')
+}
+
+export function createFeeItem(data) {
+  return request.post('/api/fee-items', data)
+}
+
+export function updateFeeItem(id, data) {
+  return request.put(`/api/fee-items/${id}`, data)
+}
+
+export function deleteFeeItem(id) {
+  return request.delete(`/api/fee-items/${id}`)
+}
+
+export function createPayment(data) {
+  return request.post('/api/payments', data)
 }
 
 export function fetchParking() {

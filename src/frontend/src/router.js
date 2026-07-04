@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import BillingView from './views/BillingView.vue'
+import CommunitiesView from './views/CommunitiesView.vue'
+import ComplaintsView from './views/ComplaintsView.vue'
 import DashboardView from './views/DashboardView.vue'
 import LoginView from './views/LoginView.vue'
 import NoticesView from './views/NoticesView.vue'
@@ -40,6 +42,15 @@ const routes = [
     },
   },
   {
+    path: '/communities',
+    component: CommunitiesView,
+    meta: {
+      module: 'communities',
+      title: '小区管理',
+      description: '维护小区基础档案、物业公司、负责人和房屋规模。',
+    },
+  },
+  {
     path: '/properties',
     component: PropertiesView,
     meta: {
@@ -55,6 +66,15 @@ const routes = [
       module: 'repairs',
       title: '报修工单',
       description: '管理维修派单、优先级、处理进度与回访。',
+    },
+  },
+  {
+    path: '/complaints',
+    component: ComplaintsView,
+    meta: {
+      module: 'complaints',
+      title: '投诉建议',
+      description: '跟踪住户投诉建议、处理回复和服务闭环。',
     },
   },
   {

@@ -83,3 +83,30 @@
   - Resident pagination returned total 6 and page size 3
   - OpenAPI docs loaded at `/v3/api-docs`
 - Generated homework screenshots and Word document under `每日作业\0703作业`.
+
+## 2026-07-04 Dev Doc Implementation
+
+- Read and extracted `E:\企业实训\实训文档\开发文档.pdf`.
+- Added development-document required business modules:
+  - Community management
+  - Complaint/suggestion management
+  - Fee item management
+  - Payment registration
+- Added backend tables, entities, mappers, service methods, and controller APIs for those modules.
+- Updated RBAC seed permissions for `communities`, `complaints`, fee item management, and payment registration.
+- Added frontend pages:
+  - `CommunitiesView.vue`
+  - `ComplaintsView.vue`
+- Rebuilt billing page to include bill query, fee item management, and payment records.
+- Added required delivery documents:
+  - `docs/01_需求分析.md`
+  - `docs/02_数据库设计.md`
+  - `docs/03_API接口文档.md`
+  - `docs/04_测试报告.md`
+  - `docs/05_用户手册.md`
+  - `docs/06_项目总结.md`
+- Added `database/schema.sql` and `database/init_data.sql`.
+- Verification passed:
+  - Backend: `src\backend\mvnw.cmd -q test`
+  - Frontend: `src\frontend\npm.cmd run build`
+  - API check: login 200, 10 menus, 32 permissions, 3 communities, 3 complaints, 4 fee items, 2 payment records.

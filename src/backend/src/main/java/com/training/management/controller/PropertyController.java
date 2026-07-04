@@ -10,11 +10,15 @@ import com.training.management.common.annotation.RequirePermission;
 import com.training.management.common.annotation.RequireRole;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
+import com.training.management.domain.entity.Community;
+import com.training.management.domain.entity.Complaint;
+import com.training.management.domain.entity.FeeItem;
 import com.training.management.domain.entity.Notice;
 import com.training.management.domain.entity.RepairOrder;
 import com.training.management.domain.entity.Resident;
 import com.training.management.domain.entity.Room;
 import com.training.management.domain.entity.SysUser;
+import com.training.management.domain.entity.PaymentRecord;
 import com.training.management.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +38,33 @@ import org.springframework.web.bind.annotation.RestController;
 public class PropertyController {
 
     private final PropertyService propertyService;
+
+    @GetMapping("/communities")
+    public ApiResponse<List<Community>> listCommunities() {
+        return ApiResponse.success(propertyService.listCommunities());
+    }
+
+    @PostMapping("/communities")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:community:manage")
+    public ApiResponse<Community> createCommunity(@RequestBody Community community) {
+        return ApiResponse.success("小区创建成功", propertyService.createCommunity(community));
+    }
+
+    @PutMapping("/communities/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:community:manage")
+    public ApiResponse<Community> updateCommunity(@PathVariable Long id, @RequestBody Community community) {
+        return ApiResponse.success("小区信息已更新", propertyService.updateCommunity(id, community));
+    }
+
+    @DeleteMapping("/communities/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:community:manage")
+    public ApiResponse<Void> deleteCommunity(@PathVariable Long id) {
+        propertyService.deleteCommunity(id);
+        return ApiResponse.success("小区已删除", null);
+    }
 
     @GetMapping("/residents")
     public ApiResponse<List<Resident>> listResidents() {
@@ -160,6 +191,33 @@ public class PropertyController {
         return ApiResponse.success("工单已删除", null);
     }
 
+    @GetMapping("/complaints")
+    public ApiResponse<List<Complaint>> listComplaints() {
+        return ApiResponse.success(propertyService.listComplaints());
+    }
+
+    @PostMapping("/complaints")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    public ApiResponse<Complaint> createComplaint(@RequestBody Complaint complaint) {
+        return ApiResponse.success("投诉建议已提交", propertyService.createComplaint(complaint));
+    }
+
+    @PatchMapping("/complaints/{id}/reply")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:complaint:handle")
+    public ApiResponse<Void> replyComplaint(@PathVariable Long id, @RequestBody Complaint complaint) {
+        propertyService.replyComplaint(id, complaint);
+        return ApiResponse.success("投诉建议已回复", null);
+    }
+
+    @DeleteMapping("/complaints/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:complaint:handle")
+    public ApiResponse<Void> deleteComplaint(@PathVariable Long id) {
+        propertyService.deleteComplaint(id);
+        return ApiResponse.success("投诉建议已删除", null);
+    }
+
     @GetMapping("/billing")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
     public ApiResponse<Map<String, Object>> getBilling() {
@@ -187,6 +245,41 @@ public class PropertyController {
     public ApiResponse<Void> deleteBill(@PathVariable Long id) {
         propertyService.deleteBill(id);
         return ApiResponse.success("账单已删除", null);
+    }
+
+    @GetMapping("/fee-items")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    public ApiResponse<List<FeeItem>> listFeeItems() {
+        return ApiResponse.success(propertyService.listFeeItems());
+    }
+
+    @PostMapping("/fee-items")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:fee-item:manage")
+    public ApiResponse<FeeItem> createFeeItem(@RequestBody FeeItem feeItem) {
+        return ApiResponse.success("费用项目已创建", propertyService.createFeeItem(feeItem));
+    }
+
+    @PutMapping("/fee-items/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:fee-item:manage")
+    public ApiResponse<FeeItem> updateFeeItem(@PathVariable Long id, @RequestBody FeeItem feeItem) {
+        return ApiResponse.success("费用项目已更新", propertyService.updateFeeItem(id, feeItem));
+    }
+
+    @DeleteMapping("/fee-items/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:fee-item:manage")
+    public ApiResponse<Void> deleteFeeItem(@PathVariable Long id) {
+        propertyService.deleteFeeItem(id);
+        return ApiResponse.success("费用项目已删除", null);
+    }
+
+    @PostMapping("/payments")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:payment:create")
+    public ApiResponse<PaymentRecord> createPayment(@RequestBody PaymentRecord paymentRecord) {
+        return ApiResponse.success("缴费登记成功", propertyService.createPayment(paymentRecord));
     }
 
     @GetMapping("/parking")

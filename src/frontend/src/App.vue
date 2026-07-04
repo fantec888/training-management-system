@@ -110,6 +110,7 @@ import {
   DataBoard,
   Document,
   House,
+  Location,
   OfficeBuilding,
   Search,
   SetUp,
@@ -127,6 +128,8 @@ const noticeVisible = ref(false)
 const globalKeyword = ref('')
 
 const menuItems = [
+  { module: 'communities', path: '/communities', label: '小区管理', icon: Location },
+  { module: 'complaints', path: '/complaints', label: '投诉建议', icon: Document },
   { module: 'dashboard', path: '/', label: '首页仪表盘', icon: DataBoard },
   { module: 'residents', path: '/residents', label: '住户管理', icon: User },
   { module: 'properties', path: '/properties', label: '楼栋房屋', icon: House },
@@ -150,6 +153,8 @@ const notifications = ref([
 ])
 
 const searchTargets = [
+  { module: 'communities', path: '/communities', label: '小区管理', keywords: ['小区', '社区', '物业公司', '地址', '负责人'] },
+  { module: 'complaints', path: '/complaints', label: '投诉建议', keywords: ['投诉', '建议', '反馈', '回复', '处理'] },
   { module: 'residents', path: '/residents', label: '住户管理', keywords: ['住户', '业主', '租户', '房号', '房间', '姓名', '手机', '电话'] },
   { module: 'properties', path: '/properties', label: '楼栋房屋', keywords: ['楼栋', '房屋', '房源', '入住', '空置', '装修'] },
   { module: 'repairs', path: '/repairs', label: '报修工单', keywords: ['工单', '报修', '维修', '派单', '处理', '漏水', '门禁'] },

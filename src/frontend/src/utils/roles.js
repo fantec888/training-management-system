@@ -6,10 +6,10 @@ export const ROLE_NAMES = {
 }
 
 export const ROLE_MODULES = {
-  SUPER_ADMIN: ['dashboard', 'residents', 'properties', 'repairs', 'billing', 'parking', 'notices', 'system-users'],
-  SERVICE_MANAGER: ['dashboard', 'residents', 'properties', 'repairs', 'parking', 'notices'],
+  SUPER_ADMIN: ['dashboard', 'residents', 'communities', 'properties', 'repairs', 'complaints', 'billing', 'parking', 'notices', 'system-users'],
+  SERVICE_MANAGER: ['dashboard', 'residents', 'communities', 'properties', 'repairs', 'complaints', 'parking', 'notices'],
   FINANCE_ADMIN: ['dashboard', 'billing', 'parking', 'residents'],
-  ENGINEER_LEAD: ['dashboard', 'properties', 'repairs', 'parking'],
+  ENGINEER_LEAD: ['dashboard', 'communities', 'properties', 'repairs', 'parking'],
 }
 
 export const ROLE_PRESETS = [
