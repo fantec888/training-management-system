@@ -11,10 +11,16 @@ public final class RoleCodes {
     public static final String ENGINEER_LEAD = "ENGINEER_LEAD";
 
     private static final Map<String, Set<String>> ROLE_MODULES = Map.of(
-        SUPER_ADMIN, Set.of("dashboard", "residents", "properties", "repairs", "billing", "parking", "notices", "system-users"),
-        SERVICE_MANAGER, Set.of("dashboard", "residents", "properties", "repairs", "parking", "notices"),
-        FINANCE_ADMIN, Set.of("dashboard", "billing", "parking", "residents"),
-        ENGINEER_LEAD, Set.of("dashboard", "properties", "repairs", "parking")
+        SUPER_ADMIN, Set.of(
+            "dashboard", "communities", "residents", "properties", "repairs", "complaints",
+            "billing", "parking", "notices", "smart-services", "statistics", "security", "system-users"
+        ),
+        SERVICE_MANAGER, Set.of(
+            "dashboard", "communities", "residents", "properties", "repairs", "complaints",
+            "parking", "notices", "smart-services", "statistics", "security"
+        ),
+        FINANCE_ADMIN, Set.of("dashboard", "billing", "parking", "residents", "statistics"),
+        ENGINEER_LEAD, Set.of("dashboard", "communities", "properties", "repairs", "parking", "statistics", "security")
     );
 
     private RoleCodes() {
