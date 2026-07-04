@@ -196,3 +196,55 @@ VALUES
 ('6 月账单欠费回访', '今天 16:30', '中', 0),
 ('周末亲子活动审批', '明天 10:00', '低', 0),
 ('地下车库摄像头巡检', '明天 15:00', '中', 0);
+
+INSERT INTO sys_permission (id, permission_code, permission_name, permission_type, parent_id, route_path, component_key, sort_order, visible)
+VALUES
+(33, 'menu:smart-services', '智能服务', 'MENU', NULL, '/smart-services', 'smart-services', 11, 1),
+(34, 'menu:statistics', '数据统计', 'MENU', NULL, '/statistics', 'statistics', 12, 1),
+(35, 'menu:security', '安防管理', 'MENU', NULL, '/security', 'security', 13, 1),
+(36, 'button:activity:manage', '社区活动管理', 'BUTTON', 33, NULL, 'smart-services', 111, 0),
+(37, 'button:package:manage', '快递代收管理', 'BUTTON', 33, NULL, 'smart-services', 112, 0),
+(38, 'button:access:manage', '门禁设备管理', 'BUTTON', 35, NULL, 'security', 131, 0),
+(39, 'button:patrol:manage', '巡检任务管理', 'BUTTON', 35, NULL, 'security', 132, 0);
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 1, id FROM sys_permission WHERE id >= 33;
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 2, id FROM sys_permission
+WHERE permission_code IN (
+    'menu:smart-services', 'menu:statistics', 'menu:security',
+    'button:activity:manage', 'button:package:manage',
+    'button:access:manage', 'button:patrol:manage'
+);
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 3, id FROM sys_permission WHERE permission_code IN ('menu:statistics');
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 4, id FROM sys_permission
+WHERE permission_code IN ('menu:statistics', 'menu:security', 'button:access:manage', 'button:patrol:manage');
+
+INSERT INTO community_activity (title, activity_type, location, organizer, start_time, signups, status)
+VALUES
+('夏日清凉市集', '社区活动', '中心广场', '社区运营部', '2026-07-06 18:30:00', 86, '报名中'),
+('亲子手工课堂', '亲子活动', '党群活动室', '客服中心', '2026-07-08 15:00:00', 32, '报名中'),
+('消防安全公开课', '安全培训', 'B区架空层', '秩序维护部', '2026-07-10 09:30:00', 64, '筹备中');
+
+INSERT INTO express_package (tracking_no, recipient_name, phone, pickup_code, cabinet_no, status, arrived_at, picked_at)
+VALUES
+('SF1002458891', '林晓雪', '138****1024', 'A739', '1号柜-03', '待领取', '2026-07-04 08:30:00', NULL),
+('YT8820911345', '赵启航', '139****7611', 'K216', '2号柜-12', '已领取', '2026-07-03 16:20:00', '2026-07-03 19:10:00'),
+('JD7712098760', '周景川', '137****9372', 'C508', '前台货架', '待领取', '2026-07-04 09:15:00', NULL);
+
+INSERT INTO access_control (device_name, gate_name, device_type, status, manager, last_check_at)
+VALUES
+('A1人脸门禁01', 'A1一单元大堂', '人脸识别', '在线', '秩序班组1', '2026-07-04 08:00:00'),
+('B2车库道闸02', '地下车库B入口', '车辆道闸', '在线', '秩序班组2', '2026-07-04 08:20:00'),
+('C1访客机01', 'C1大堂', '访客登记', '离线', '秩序班组1', '2026-07-03 22:10:00');
+
+INSERT INTO patrol_task (route_name, area, assignee, plan_time, status, result, finished_at)
+VALUES
+('早班公共区域巡检', 'A区大堂/电梯/消防通道', '王安保', '2026-07-04 09:00:00', '已完成', '公共照明正常，A2大堂门禁需复查', '2026-07-04 09:40:00'),
+('车库夜间巡检', 'B1-B2地下车库', '刘安保', '2026-07-04 22:00:00', '待巡检', NULL, NULL),
+('消防设施巡检', 'C1楼栋消防箱', '陈工程', '2026-07-05 10:00:00', '待巡检', NULL, NULL);

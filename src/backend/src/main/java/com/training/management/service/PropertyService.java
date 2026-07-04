@@ -14,12 +14,16 @@ import com.github.pagehelper.PageInfo;
 import com.training.management.common.RequestContext;
 import com.training.management.common.PageResult;
 import com.training.management.common.exception.BusinessException;
+import com.training.management.domain.entity.AccessControl;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
 import com.training.management.domain.entity.Community;
+import com.training.management.domain.entity.CommunityActivity;
 import com.training.management.domain.entity.Complaint;
+import com.training.management.domain.entity.ExpressPackage;
 import com.training.management.domain.entity.FeeItem;
 import com.training.management.domain.entity.Notice;
+import com.training.management.domain.entity.PatrolTask;
 import com.training.management.domain.entity.ParkingVehicle;
 import com.training.management.domain.entity.PaymentRecord;
 import com.training.management.domain.entity.RepairOrder;
@@ -28,10 +32,14 @@ import com.training.management.domain.entity.Room;
 import com.training.management.domain.entity.SysUser;
 import com.training.management.mapper.BillMapper;
 import com.training.management.mapper.BuildingMapper;
+import com.training.management.mapper.AccessControlMapper;
 import com.training.management.mapper.CommunityMapper;
+import com.training.management.mapper.CommunityActivityMapper;
 import com.training.management.mapper.ComplaintMapper;
+import com.training.management.mapper.ExpressPackageMapper;
 import com.training.management.mapper.FeeItemMapper;
 import com.training.management.mapper.NoticeMapper;
+import com.training.management.mapper.PatrolTaskMapper;
 import com.training.management.mapper.ParkingVehicleMapper;
 import com.training.management.mapper.PaymentRecordMapper;
 import com.training.management.mapper.RepairOrderMapper;
@@ -57,6 +65,10 @@ public class PropertyService {
     private final PaymentRecordMapper paymentRecordMapper;
     private final ParkingVehicleMapper parkingVehicleMapper;
     private final NoticeMapper noticeMapper;
+    private final CommunityActivityMapper communityActivityMapper;
+    private final ExpressPackageMapper expressPackageMapper;
+    private final AccessControlMapper accessControlMapper;
+    private final PatrolTaskMapper patrolTaskMapper;
     private final SysUserMapper sysUserMapper;
     private final AuthService authService;
 
@@ -416,6 +428,217 @@ public class PropertyService {
         noticeMapper.deleteById(id);
     }
 
+    public Map<String, Object> getSmartServices() {
+        Map<String, Object> data = new LinkedHashMap<>();
+        List<CommunityActivity> activities = communityActivityMapper.findAll();
+        List<ExpressPackage> packages = expressPackageMapper.findAll();
+        data.put("summary", List.of(
+            summary("公告通知", String.valueOf(noticeMapper.countAll())),
+            summary("社区活动", String.valueOf(activities.size())),
+            summary("待领取快递", String.valueOf(packages.stream().filter(item -> !"已领取".equals(item.getStatus())).count()))
+        ));
+        data.put("notices", noticeMapper.findAll());
+        data.put("activities", activities);
+        data.put("packages", packages);
+        return data;
+    }
+
+    public CommunityActivity createActivity(CommunityActivity activity) {
+        requireText(activity.getTitle(), "活动标题不能为空");
+        requireText(activity.getLocation(), "活动地点不能为空");
+        requireText(activity.getOrganizer(), "组织部门不能为空");
+        if (!StringUtils.hasText(activity.getActivityType())) {
+            activity.setActivityType("社区活动");
+        }
+        if (activity.getStartTime() == null) {
+            activity.setStartTime(LocalDateTime.now().plusDays(3));
+        }
+        if (activity.getSignups() == null) {
+            activity.setSignups(0);
+        }
+        if (!StringUtils.hasText(activity.getStatus())) {
+            activity.setStatus("报名中");
+        }
+        communityActivityMapper.insert(activity);
+        return activity;
+    }
+
+    public CommunityActivity updateActivity(Long id, CommunityActivity activity) {
+        activity.setId(id);
+        createActivityDefaults(activity);
+        communityActivityMapper.update(activity);
+        return activity;
+    }
+
+    public void updateActivityStatus(Long id, String status) {
+        requireText(status, "活动状态不能为空");
+        communityActivityMapper.updateStatus(id, status);
+    }
+
+    public void deleteActivity(Long id) {
+        communityActivityMapper.deleteById(id);
+    }
+
+    public ExpressPackage createPackage(ExpressPackage expressPackage) {
+        requireText(expressPackage.getTrackingNo(), "快递单号不能为空");
+        requireText(expressPackage.getRecipientName(), "收件人不能为空");
+        requireText(expressPackage.getPhone(), "联系电话不能为空");
+        if (!StringUtils.hasText(expressPackage.getPickupCode())) {
+            expressPackage.setPickupCode("P" + DateTimeFormatter.ofPattern("HHmm").format(LocalDateTime.now()));
+        }
+        if (!StringUtils.hasText(expressPackage.getStatus())) {
+            expressPackage.setStatus("待领取");
+        }
+        if (expressPackage.getArrivedAt() == null) {
+            expressPackage.setArrivedAt(LocalDateTime.now());
+        }
+        expressPackageMapper.insert(expressPackage);
+        return expressPackage;
+    }
+
+    public ExpressPackage updatePackage(Long id, ExpressPackage expressPackage) {
+        expressPackage.setId(id);
+        if (expressPackage.getArrivedAt() == null) {
+            expressPackage.setArrivedAt(LocalDateTime.now());
+        }
+        expressPackageMapper.update(expressPackage);
+        return expressPackage;
+    }
+
+    public void updatePackageStatus(Long id, String status) {
+        requireText(status, "快递状态不能为空");
+        ExpressPackage expressPackage = new ExpressPackage();
+        expressPackage.setId(id);
+        expressPackage.setStatus(status);
+        expressPackage.setPickedAt("已领取".equals(status) ? LocalDateTime.now() : null);
+        expressPackageMapper.updateStatus(expressPackage);
+    }
+
+    public void deletePackage(Long id) {
+        expressPackageMapper.deleteById(id);
+    }
+
+    public Map<String, Object> getAdvancedStatistics() {
+        List<RepairOrder> repairs = repairOrderMapper.findAll();
+        List<Complaint> complaints = complaintMapper.findAll();
+        BigDecimal receivable = billMapper.sumReceivable();
+        BigDecimal paid = billMapper.sumPaid();
+        BigDecimal paymentRate = receivable.compareTo(BigDecimal.ZERO) == 0
+            ? BigDecimal.ZERO
+            : paid.multiply(BigDecimal.valueOf(100)).divide(receivable, 1, RoundingMode.HALF_UP);
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("summary", List.of(
+            summary("住户总数", String.valueOf(residentMapper.findAll().size())),
+            summary("入住率", getOccupancyRate() + "%"),
+            summary("缴费率", paymentRate + "%"),
+            summary("投诉处理率", getComplaintHandledRate(complaints) + "%")
+        ));
+        data.put("repairChart", Map.of(
+            "pending", repairs.stream().filter(item -> !"已完成".equals(item.getStatus())).count(),
+            "finished", repairs.stream().filter(item -> "已完成".equals(item.getStatus())).count(),
+            "highPriority", repairs.stream().filter(item -> "高".equals(item.getPriority())).count()
+        ));
+        data.put("paymentChart", Map.of(
+            "receivable", receivable,
+            "paid", paid,
+            "unpaid", receivable.subtract(paid).max(BigDecimal.ZERO)
+        ));
+        data.put("complaintChart", Map.of(
+            "total", complaints.size(),
+            "handled", complaints.stream().filter(item -> item.getReply() != null).count(),
+            "pending", complaints.stream().filter(item -> item.getReply() == null).count()
+        ));
+        return data;
+    }
+
+    public Map<String, Object> getSecurity() {
+        List<AccessControl> accessControls = accessControlMapper.findAll();
+        List<PatrolTask> patrols = patrolTaskMapper.findAll();
+        List<ParkingVehicle> vehicles = parkingVehicleMapper.findAll();
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("summary", List.of(
+            summary("门禁设备", String.valueOf(accessControls.size())),
+            summary("在线设备", String.valueOf(accessControls.stream().filter(item -> "在线".equals(item.getStatus())).count())),
+            summary("车辆档案", String.valueOf(vehicles.size())),
+            summary("待巡检", String.valueOf(patrols.stream().filter(item -> !"已完成".equals(item.getStatus())).count()))
+        ));
+        data.put("accessControls", accessControls);
+        data.put("vehicles", vehicles);
+        data.put("patrols", patrols);
+        return data;
+    }
+
+    public AccessControl createAccessControl(AccessControl accessControl) {
+        requireText(accessControl.getDeviceName(), "门禁设备名称不能为空");
+        requireText(accessControl.getGateName(), "门禁位置不能为空");
+        requireText(accessControl.getManager(), "负责人不能为空");
+        if (!StringUtils.hasText(accessControl.getDeviceType())) {
+            accessControl.setDeviceType("人脸识别");
+        }
+        if (!StringUtils.hasText(accessControl.getStatus())) {
+            accessControl.setStatus("在线");
+        }
+        if (accessControl.getLastCheckAt() == null) {
+            accessControl.setLastCheckAt(LocalDateTime.now());
+        }
+        accessControlMapper.insert(accessControl);
+        return accessControl;
+    }
+
+    public AccessControl updateAccessControl(Long id, AccessControl accessControl) {
+        accessControl.setId(id);
+        if (accessControl.getLastCheckAt() == null) {
+            accessControl.setLastCheckAt(LocalDateTime.now());
+        }
+        accessControlMapper.update(accessControl);
+        return accessControl;
+    }
+
+    public void updateAccessStatus(Long id, String status) {
+        requireText(status, "设备状态不能为空");
+        accessControlMapper.updateStatus(id, status);
+    }
+
+    public void deleteAccessControl(Long id) {
+        accessControlMapper.deleteById(id);
+    }
+
+    public PatrolTask createPatrol(PatrolTask patrolTask) {
+        requireText(patrolTask.getRouteName(), "巡检路线不能为空");
+        requireText(patrolTask.getArea(), "巡检区域不能为空");
+        requireText(patrolTask.getAssignee(), "巡检人员不能为空");
+        if (patrolTask.getPlanTime() == null) {
+            patrolTask.setPlanTime(LocalDateTime.now().plusHours(2));
+        }
+        if (!StringUtils.hasText(patrolTask.getStatus())) {
+            patrolTask.setStatus("待巡检");
+        }
+        patrolTaskMapper.insert(patrolTask);
+        return patrolTask;
+    }
+
+    public PatrolTask updatePatrol(Long id, PatrolTask patrolTask) {
+        patrolTask.setId(id);
+        patrolTaskMapper.update(patrolTask);
+        return patrolTask;
+    }
+
+    public void finishPatrol(Long id, PatrolTask patrolTask) {
+        patrolTask.setId(id);
+        if (!StringUtils.hasText(patrolTask.getStatus())) {
+            patrolTask.setStatus("已完成");
+        }
+        if (patrolTask.getFinishedAt() == null && "已完成".equals(patrolTask.getStatus())) {
+            patrolTask.setFinishedAt(LocalDateTime.now());
+        }
+        patrolTaskMapper.updateResult(patrolTask);
+    }
+
+    public void deletePatrol(Long id) {
+        patrolTaskMapper.deleteById(id);
+    }
+
     public List<SysUser> listSystemUsers() {
         return sysUserMapper.findAll();
     }
@@ -543,6 +766,44 @@ public class PropertyService {
         if (feeItem.getEnabled() == null) {
             feeItem.setEnabled(true);
         }
+    }
+
+    private void createActivityDefaults(CommunityActivity activity) {
+        requireText(activity.getTitle(), "活动标题不能为空");
+        requireText(activity.getLocation(), "活动地点不能为空");
+        requireText(activity.getOrganizer(), "组织部门不能为空");
+        if (!StringUtils.hasText(activity.getActivityType())) {
+            activity.setActivityType("社区活动");
+        }
+        if (activity.getStartTime() == null) {
+            activity.setStartTime(LocalDateTime.now().plusDays(3));
+        }
+        if (activity.getSignups() == null) {
+            activity.setSignups(0);
+        }
+        if (!StringUtils.hasText(activity.getStatus())) {
+            activity.setStatus("报名中");
+        }
+    }
+
+    private BigDecimal getOccupancyRate() {
+        long totalRooms = roomMapper.countAll();
+        if (totalRooms == 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(roomMapper.countOccupied())
+            .multiply(BigDecimal.valueOf(100))
+            .divide(BigDecimal.valueOf(totalRooms), 1, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getComplaintHandledRate(List<Complaint> complaints) {
+        if (complaints.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        long handled = complaints.stream().filter(item -> item.getReply() != null).count();
+        return BigDecimal.valueOf(handled)
+            .multiply(BigDecimal.valueOf(100))
+            .divide(BigDecimal.valueOf(complaints.size()), 1, RoundingMode.HALF_UP);
     }
 
     private void preventCurrentUserRemoval(Long id, String message) {

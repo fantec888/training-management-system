@@ -9,6 +9,9 @@ import ParkingView from './views/ParkingView.vue'
 import PropertiesView from './views/PropertiesView.vue'
 import RepairsView from './views/RepairsView.vue'
 import ResidentsView from './views/ResidentsView.vue'
+import SecurityView from './views/SecurityView.vue'
+import SmartServicesView from './views/SmartServicesView.vue'
+import StatisticsView from './views/StatisticsView.vue'
 import SystemUsersView from './views/SystemUsersView.vue'
 import { clearAuth, getToken, getUser, hasValidUser } from './utils/auth'
 import { canAccessModule } from './utils/roles'
@@ -102,6 +105,33 @@ const routes = [
       module: 'notices',
       title: '公告活动',
       description: '发布社区公告、活动与触达范围。',
+    },
+  },
+  {
+    path: '/smart-services',
+    component: SmartServicesView,
+    meta: {
+      module: 'smart-services',
+      title: '智能服务',
+      description: '统一管理公告通知、社区活动和快递代收服务。',
+    },
+  },
+  {
+    path: '/statistics',
+    component: StatisticsView,
+    meta: {
+      module: 'statistics',
+      title: '数据统计',
+      description: '查看综合数据看板、报修统计、缴费率和投诉处理统计。',
+    },
+  },
+  {
+    path: '/security',
+    component: SecurityView,
+    meta: {
+      module: 'security',
+      title: '安防管理',
+      description: '管理门禁设备、车辆档案和巡检任务。',
     },
   },
   {

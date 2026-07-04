@@ -1,5 +1,9 @@
 DROP TABLE IF EXISTS todo_item;
 DROP TABLE IF EXISTS monthly_revenue;
+DROP TABLE IF EXISTS patrol_task;
+DROP TABLE IF EXISTS access_control;
+DROP TABLE IF EXISTS express_package;
+DROP TABLE IF EXISTS community_activity;
 DROP TABLE IF EXISTS payment_record;
 DROP TABLE IF EXISTS fee_item;
 DROP TABLE IF EXISTS notice;
@@ -205,6 +209,51 @@ CREATE TABLE notice (
     publisher VARCHAR(80) NOT NULL,
     publish_time DATETIME NOT NULL,
     status VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE community_activity (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(120) NOT NULL,
+    activity_type VARCHAR(30) NOT NULL,
+    location VARCHAR(120) NOT NULL,
+    organizer VARCHAR(80) NOT NULL,
+    start_time DATETIME NOT NULL,
+    signups INT NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT '报名中',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE express_package (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tracking_no VARCHAR(60) NOT NULL UNIQUE,
+    recipient_name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    pickup_code VARCHAR(20) NOT NULL,
+    cabinet_no VARCHAR(30),
+    status VARCHAR(20) NOT NULL DEFAULT '待领取',
+    arrived_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    picked_at DATETIME
+);
+
+CREATE TABLE access_control (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    device_name VARCHAR(80) NOT NULL,
+    gate_name VARCHAR(80) NOT NULL,
+    device_type VARCHAR(30) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT '在线',
+    manager VARCHAR(50) NOT NULL,
+    last_check_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE patrol_task (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    route_name VARCHAR(80) NOT NULL,
+    area VARCHAR(120) NOT NULL,
+    assignee VARCHAR(50) NOT NULL,
+    plan_time DATETIME NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT '待巡检',
+    result VARCHAR(255),
+    finished_at DATETIME
 );
 
 CREATE TABLE monthly_revenue (

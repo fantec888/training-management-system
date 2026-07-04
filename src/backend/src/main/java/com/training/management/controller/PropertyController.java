@@ -8,12 +8,16 @@ import com.training.management.common.PageResult;
 import com.training.management.common.RoleCodes;
 import com.training.management.common.annotation.RequirePermission;
 import com.training.management.common.annotation.RequireRole;
+import com.training.management.domain.entity.AccessControl;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
 import com.training.management.domain.entity.Community;
+import com.training.management.domain.entity.CommunityActivity;
 import com.training.management.domain.entity.Complaint;
+import com.training.management.domain.entity.ExpressPackage;
 import com.training.management.domain.entity.FeeItem;
 import com.training.management.domain.entity.Notice;
+import com.training.management.domain.entity.PatrolTask;
 import com.training.management.domain.entity.RepairOrder;
 import com.training.management.domain.entity.Resident;
 import com.training.management.domain.entity.Room;
@@ -313,6 +317,141 @@ public class PropertyController {
     public ApiResponse<Void> deleteNotice(@PathVariable Long id) {
         propertyService.deleteNotice(id);
         return ApiResponse.success("公告已删除", null);
+    }
+
+    @GetMapping("/smart-services")
+    public ApiResponse<Map<String, Object>> getSmartServices() {
+        return ApiResponse.success(propertyService.getSmartServices());
+    }
+
+    @PostMapping("/activities")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:activity:manage")
+    public ApiResponse<CommunityActivity> createActivity(@RequestBody CommunityActivity activity) {
+        return ApiResponse.success("社区活动已创建", propertyService.createActivity(activity));
+    }
+
+    @PutMapping("/activities/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:activity:manage")
+    public ApiResponse<CommunityActivity> updateActivity(@PathVariable Long id, @RequestBody CommunityActivity activity) {
+        return ApiResponse.success("社区活动已更新", propertyService.updateActivity(id, activity));
+    }
+
+    @PatchMapping("/activities/{id}/status")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:activity:manage")
+    public ApiResponse<Void> updateActivityStatus(@PathVariable Long id, @RequestParam String status) {
+        propertyService.updateActivityStatus(id, status);
+        return ApiResponse.success("社区活动状态已更新", null);
+    }
+
+    @DeleteMapping("/activities/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:activity:manage")
+    public ApiResponse<Void> deleteActivity(@PathVariable Long id) {
+        propertyService.deleteActivity(id);
+        return ApiResponse.success("社区活动已删除", null);
+    }
+
+    @PostMapping("/packages")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:package:manage")
+    public ApiResponse<ExpressPackage> createPackage(@RequestBody ExpressPackage expressPackage) {
+        return ApiResponse.success("快递代收已登记", propertyService.createPackage(expressPackage));
+    }
+
+    @PutMapping("/packages/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:package:manage")
+    public ApiResponse<ExpressPackage> updatePackage(@PathVariable Long id, @RequestBody ExpressPackage expressPackage) {
+        return ApiResponse.success("快递信息已更新", propertyService.updatePackage(id, expressPackage));
+    }
+
+    @PatchMapping("/packages/{id}/status")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:package:manage")
+    public ApiResponse<Void> updatePackageStatus(@PathVariable Long id, @RequestParam String status) {
+        propertyService.updatePackageStatus(id, status);
+        return ApiResponse.success("快递状态已更新", null);
+    }
+
+    @DeleteMapping("/packages/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:package:manage")
+    public ApiResponse<Void> deletePackage(@PathVariable Long id) {
+        propertyService.deletePackage(id);
+        return ApiResponse.success("快递记录已删除", null);
+    }
+
+    @GetMapping("/statistics/advanced")
+    public ApiResponse<Map<String, Object>> getAdvancedStatistics() {
+        return ApiResponse.success(propertyService.getAdvancedStatistics());
+    }
+
+    @GetMapping("/security")
+    public ApiResponse<Map<String, Object>> getSecurity() {
+        return ApiResponse.success(propertyService.getSecurity());
+    }
+
+    @PostMapping("/access-controls")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:access:manage")
+    public ApiResponse<AccessControl> createAccessControl(@RequestBody AccessControl accessControl) {
+        return ApiResponse.success("门禁设备已创建", propertyService.createAccessControl(accessControl));
+    }
+
+    @PutMapping("/access-controls/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:access:manage")
+    public ApiResponse<AccessControl> updateAccessControl(@PathVariable Long id, @RequestBody AccessControl accessControl) {
+        return ApiResponse.success("门禁设备已更新", propertyService.updateAccessControl(id, accessControl));
+    }
+
+    @PatchMapping("/access-controls/{id}/status")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:access:manage")
+    public ApiResponse<Void> updateAccessStatus(@PathVariable Long id, @RequestParam String status) {
+        propertyService.updateAccessStatus(id, status);
+        return ApiResponse.success("门禁状态已更新", null);
+    }
+
+    @DeleteMapping("/access-controls/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:access:manage")
+    public ApiResponse<Void> deleteAccessControl(@PathVariable Long id) {
+        propertyService.deleteAccessControl(id);
+        return ApiResponse.success("门禁设备已删除", null);
+    }
+
+    @PostMapping("/patrols")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:patrol:manage")
+    public ApiResponse<PatrolTask> createPatrol(@RequestBody PatrolTask patrolTask) {
+        return ApiResponse.success("巡检任务已创建", propertyService.createPatrol(patrolTask));
+    }
+
+    @PutMapping("/patrols/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:patrol:manage")
+    public ApiResponse<PatrolTask> updatePatrol(@PathVariable Long id, @RequestBody PatrolTask patrolTask) {
+        return ApiResponse.success("巡检任务已更新", propertyService.updatePatrol(id, patrolTask));
+    }
+
+    @PatchMapping("/patrols/{id}/finish")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:patrol:manage")
+    public ApiResponse<Void> finishPatrol(@PathVariable Long id, @RequestBody PatrolTask patrolTask) {
+        propertyService.finishPatrol(id, patrolTask);
+        return ApiResponse.success("巡检结果已保存", null);
+    }
+
+    @DeleteMapping("/patrols/{id}")
+    @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:patrol:manage")
+    public ApiResponse<Void> deletePatrol(@PathVariable Long id) {
+        propertyService.deletePatrol(id);
+        return ApiResponse.success("巡检任务已删除", null);
     }
 
     @GetMapping("/system-users")

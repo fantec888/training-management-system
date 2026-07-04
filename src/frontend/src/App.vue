@@ -137,6 +137,9 @@ const menuItems = [
   { module: 'billing', path: '/billing', label: '收费管理', icon: CreditCard },
   { module: 'parking', path: '/parking', label: '停车管理', icon: Van },
   { module: 'notices', path: '/notices', label: '公告活动', icon: Document },
+  { module: 'smart-services', path: '/smart-services', label: '智能服务', icon: Tickets },
+  { module: 'statistics', path: '/statistics', label: '数据统计', icon: DataBoard },
+  { module: 'security', path: '/security', label: '安防管理', icon: SetUp },
   { module: 'system-users', path: '/system-users', label: '系统用户', icon: SetUp },
 ]
 
@@ -161,6 +164,9 @@ const searchTargets = [
   { module: 'billing', path: '/billing', label: '收费管理', keywords: ['账单', '收费', '缴费', '欠费', '逾期', '物业费', '水电'] },
   { module: 'parking', path: '/parking', label: '停车管理', keywords: ['停车', '车位', '车辆', '车牌', '月租', '临停'] },
   { module: 'notices', path: '/notices', label: '公告活动', keywords: ['公告', '通知', '活动', '发布', '下架'] },
+  { module: 'smart-services', path: '/smart-services', label: '智能服务', keywords: ['智能', '活动', '快递', '代收', '通知'] },
+  { module: 'statistics', path: '/statistics', label: '数据统计', keywords: ['统计', '图表', '缴费率', '投诉时效', '数据'] },
+  { module: 'security', path: '/security', label: '安防管理', keywords: ['安防', '门禁', '巡检', '车辆', '道闸'] },
   { module: 'system-users', path: '/system-users', label: '系统用户', keywords: ['用户', '账号', '角色', '权限', '管理员'] },
 ]
 
