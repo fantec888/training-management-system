@@ -7,7 +7,7 @@
         </div>
         <div class="toolbar-right">
           <el-button @click="exportRepairs">导出工单</el-button>
-          <el-button type="primary" @click="openCreate">新建工单</el-button>
+          <el-button v-if="canDo('button:repair:create')" type="primary" @click="openCreate">新建工单</el-button>
         </div>
       </div>
     </el-card>
@@ -70,10 +70,10 @@
         <el-table-column label="操作" width="290" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
-            <el-button link type="primary" @click="openProgress(row, '待处理')">派单</el-button>
-            <el-button link type="warning" @click="quickProgress(row, '处理中')">处理</el-button>
-            <el-button link type="success" @click="quickProgress(row, '已完成')">完成</el-button>
-            <el-button link type="danger" @click="removeRepair(row)">删除</el-button>
+            <el-button v-if="canDo('button:repair:update')" link type="primary" @click="openProgress(row, '待处理')">派单</el-button>
+            <el-button v-if="canDo('button:repair:update')" link type="warning" @click="quickProgress(row, '处理中')">处理</el-button>
+            <el-button v-if="canDo('button:repair:update')" link type="success" @click="quickProgress(row, '已完成')">完成</el-button>
+            <el-button v-if="canDo('button:repair:delete')" link type="danger" @click="removeRepair(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -154,6 +154,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { createRepair, deleteRepair, fetchRepairs, updateRepairProgress } from '../api/property'
 import { repairsFallback } from '../data/mock'
 import { exportCsv } from '../utils/exportCsv'
+import { getUser } from '../utils/auth'
+import { hasPermission } from '../utils/roles'
 
 const statusOptions = ['全部工单', '待处理', '处理中', '已完成']
 const repairs = ref(repairsFallback)
@@ -164,6 +166,7 @@ const detailVisible = ref(false)
 const form = reactive(defaultRepair())
 const progressForm = reactive(defaultProgress())
 const currentRepair = ref(null)
+const currentUser = computed(() => getUser())
 
 const filteredRepairs = computed(() => {
   if (statusFilter.value === '全部工单') return repairs.value
@@ -177,6 +180,10 @@ const averageHours = computed(() => {
   const total = repairs.value.reduce((sum, item) => sum + Number(item.durationHours || 0), 0)
   return `${(total / repairs.value.length).toFixed(1)}h`
 })
+
+function canDo(permissionCode) {
+  return hasPermission(currentUser.value, permissionCode)
+}
 
 async function loadRepairs() {
   try {

@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.training.management.common.ApiResponse;
+import com.training.management.common.PageResult;
 import com.training.management.common.RoleCodes;
+import com.training.management.common.annotation.RequirePermission;
 import com.training.management.common.annotation.RequireRole;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
@@ -38,20 +40,31 @@ public class PropertyController {
         return ApiResponse.success(propertyService.listResidents());
     }
 
+    @GetMapping("/residents/page")
+    public ApiResponse<PageResult<Resident>> pageResidents(
+        @RequestParam(defaultValue = "1") Integer pageNum,
+        @RequestParam(defaultValue = "5") Integer pageSize
+    ) {
+        return ApiResponse.success(propertyService.pageResidents(pageNum, pageSize));
+    }
+
     @PostMapping("/residents")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:resident:create")
     public ApiResponse<Resident> createResident(@RequestBody Resident resident) {
         return ApiResponse.success("新增住户成功", propertyService.createResident(resident));
     }
 
     @PutMapping("/residents/{id}")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:resident:update")
     public ApiResponse<Resident> updateResident(@PathVariable Long id, @RequestBody Resident resident) {
         return ApiResponse.success("住户信息已更新", propertyService.updateResident(id, resident));
     }
 
     @PatchMapping("/residents/{id}/status")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:resident:update")
     public ApiResponse<Void> updateResidentStatus(@PathVariable Long id, @RequestParam String status) {
         propertyService.updateResidentStatus(id, status);
         return ApiResponse.success("住户状态已更新", null);
@@ -59,6 +72,7 @@ public class PropertyController {
 
     @DeleteMapping("/residents/{id}")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:resident:delete")
     public ApiResponse<Void> deleteResident(@PathVariable Long id) {
         propertyService.deleteResident(id);
         return ApiResponse.success("住户已删除", null);
@@ -125,12 +139,14 @@ public class PropertyController {
 
     @PostMapping("/repairs")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:repair:create")
     public ApiResponse<RepairOrder> createRepair(@RequestBody RepairOrder repairOrder) {
         return ApiResponse.success("工单创建成功", propertyService.createRepair(repairOrder));
     }
 
     @PatchMapping("/repairs/{id}/progress")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:repair:update")
     public ApiResponse<Void> updateRepairProgress(@PathVariable Long id, @RequestBody RepairOrder repairOrder) {
         propertyService.updateRepairProgress(id, repairOrder);
         return ApiResponse.success("工单进度已更新", null);
@@ -138,6 +154,7 @@ public class PropertyController {
 
     @DeleteMapping("/repairs/{id}")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.ENGINEER_LEAD})
+    @RequirePermission("button:repair:delete")
     public ApiResponse<Void> deleteRepair(@PathVariable Long id) {
         propertyService.deleteRepair(id);
         return ApiResponse.success("工单已删除", null);
@@ -151,12 +168,14 @@ public class PropertyController {
 
     @PostMapping("/billing")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:bill:create")
     public ApiResponse<Bill> createBill(@RequestBody Bill bill) {
         return ApiResponse.success("账单创建成功", propertyService.createBill(bill));
     }
 
     @PatchMapping("/billing/{id}/status")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:bill:update")
     public ApiResponse<Void> updateBillStatus(@PathVariable Long id, @RequestParam String status) {
         propertyService.updateBillStatus(id, status);
         return ApiResponse.success("账单状态已更新", null);
@@ -164,6 +183,7 @@ public class PropertyController {
 
     @DeleteMapping("/billing/{id}")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.FINANCE_ADMIN})
+    @RequirePermission("button:bill:delete")
     public ApiResponse<Void> deleteBill(@PathVariable Long id) {
         propertyService.deleteBill(id);
         return ApiResponse.success("账单已删除", null);
@@ -181,12 +201,14 @@ public class PropertyController {
 
     @PostMapping("/notices")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:notice:create")
     public ApiResponse<Notice> createNotice(@RequestBody Notice notice) {
         return ApiResponse.success("公告发布成功", propertyService.createNotice(notice));
     }
 
     @PatchMapping("/notices/{id}/status")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:notice:create")
     public ApiResponse<Void> updateNoticeStatus(@PathVariable Long id, @RequestParam String status) {
         propertyService.updateNoticeStatus(id, status);
         return ApiResponse.success("公告状态已更新", null);
@@ -194,6 +216,7 @@ public class PropertyController {
 
     @DeleteMapping("/notices/{id}")
     @RequireRole({RoleCodes.SUPER_ADMIN, RoleCodes.SERVICE_MANAGER})
+    @RequirePermission("button:notice:delete")
     public ApiResponse<Void> deleteNotice(@PathVariable Long id) {
         propertyService.deleteNotice(id);
         return ApiResponse.success("公告已删除", null);
@@ -207,18 +230,21 @@ public class PropertyController {
 
     @PostMapping("/system-users")
     @RequireRole(RoleCodes.SUPER_ADMIN)
+    @RequirePermission("button:user:create")
     public ApiResponse<SysUser> createSystemUser(@RequestBody SysUser user) {
         return ApiResponse.success("账号创建成功", propertyService.createSystemUser(user));
     }
 
     @PutMapping("/system-users/{id}")
     @RequireRole(RoleCodes.SUPER_ADMIN)
+    @RequirePermission("button:user:update")
     public ApiResponse<SysUser> updateSystemUser(@PathVariable Long id, @RequestBody SysUser user) {
         return ApiResponse.success("账号信息已更新", propertyService.updateSystemUser(id, user));
     }
 
     @PatchMapping("/system-users/{id}/status")
     @RequireRole(RoleCodes.SUPER_ADMIN)
+    @RequirePermission("button:user:update")
     public ApiResponse<Void> updateSystemUserStatus(@PathVariable Long id, @RequestParam Boolean enabled) {
         propertyService.updateSystemUserStatus(id, enabled);
         return ApiResponse.success("账号状态已更新", null);
@@ -226,6 +252,7 @@ public class PropertyController {
 
     @DeleteMapping("/system-users/{id}")
     @RequireRole(RoleCodes.SUPER_ADMIN)
+    @RequirePermission("button:user:delete")
     public ApiResponse<Void> deleteSystemUser(@PathVariable Long id) {
         propertyService.deleteSystemUser(id);
         return ApiResponse.success("账号已删除", null);

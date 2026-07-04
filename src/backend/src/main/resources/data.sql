@@ -5,6 +5,75 @@ VALUES
 ('finance_admin', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '财务专员', 'FINANCE_ADMIN', '财务部', '收费、报表', '13800000003', 1, '2026-06-30 18:11:00'),
 ('engineer_lead', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '工程组长', 'ENGINEER_LEAD', '工程维修部', '工单、设备', '13800000004', 0, '2026-06-30 20:30:00');
 
+INSERT INTO sys_role (id, role_code, role_name, description, enabled, sort_order)
+VALUES
+(1, 'SUPER_ADMIN', '系统管理员', '拥有后台全部菜单、接口和按钮权限', 1, 1),
+(2, 'SERVICE_MANAGER', '物业客服主管', '负责住户、报修、公告和停车等日常服务', 1, 2),
+(3, 'FINANCE_ADMIN', '财务专员', '负责收费账单、缴费确认和财务统计', 1, 3),
+(4, 'ENGINEER_LEAD', '工程维修组长', '负责楼栋房屋、设备巡检和维修工单处理', 1, 4);
+
+INSERT INTO sys_permission (id, permission_code, permission_name, permission_type, parent_id, route_path, component_key, sort_order, visible)
+VALUES
+(1, 'menu:dashboard', '首页仪表盘', 'MENU', NULL, '/', 'dashboard', 1, 1),
+(2, 'menu:residents', '住户管理', 'MENU', NULL, '/residents', 'residents', 2, 1),
+(3, 'menu:properties', '楼栋房屋', 'MENU', NULL, '/properties', 'properties', 3, 1),
+(4, 'menu:repairs', '报修工单', 'MENU', NULL, '/repairs', 'repairs', 4, 1),
+(5, 'menu:billing', '收费管理', 'MENU', NULL, '/billing', 'billing', 5, 1),
+(6, 'menu:parking', '停车管理', 'MENU', NULL, '/parking', 'parking', 6, 1),
+(7, 'menu:notices', '公告活动', 'MENU', NULL, '/notices', 'notices', 7, 1),
+(8, 'menu:system-users', '系统用户', 'MENU', NULL, '/system-users', 'system-users', 8, 1),
+(9, 'button:resident:create', '新增住户', 'BUTTON', 2, NULL, 'residents', 21, 0),
+(10, 'button:resident:update', '编辑住户', 'BUTTON', 2, NULL, 'residents', 22, 0),
+(11, 'button:resident:delete', '删除住户', 'BUTTON', 2, NULL, 'residents', 23, 0),
+(12, 'button:repair:create', '创建工单', 'BUTTON', 4, NULL, 'repairs', 41, 0),
+(13, 'button:repair:update', '更新工单进度', 'BUTTON', 4, NULL, 'repairs', 42, 0),
+(14, 'button:repair:delete', '删除工单', 'BUTTON', 4, NULL, 'repairs', 43, 0),
+(15, 'button:bill:create', '创建账单', 'BUTTON', 5, NULL, 'billing', 51, 0),
+(16, 'button:bill:update', '更新账单状态', 'BUTTON', 5, NULL, 'billing', 52, 0),
+(17, 'button:bill:delete', '删除账单', 'BUTTON', 5, NULL, 'billing', 53, 0),
+(18, 'button:notice:create', '发布公告', 'BUTTON', 7, NULL, 'notices', 71, 0),
+(19, 'button:notice:delete', '删除公告', 'BUTTON', 7, NULL, 'notices', 72, 0),
+(20, 'button:user:create', '新增系统用户', 'BUTTON', 8, NULL, 'system-users', 81, 0),
+(21, 'button:user:update', '编辑系统用户', 'BUTTON', 8, NULL, 'system-users', 82, 0),
+(22, 'button:user:delete', '删除系统用户', 'BUTTON', 8, NULL, 'system-users', 83, 0),
+(23, 'button:role:manage', '角色管理', 'BUTTON', 8, NULL, 'system-users', 84, 0),
+(24, 'button:permission:manage', '菜单权限管理', 'BUTTON', 8, NULL, 'system-users', 85, 0),
+(25, 'button:user-role:assign', '用户角色分配', 'BUTTON', 8, NULL, 'system-users', 86, 0),
+(26, 'button:role-permission:assign', '角色权限分配', 'BUTTON', 8, NULL, 'system-users', 87, 0);
+
+INSERT INTO sys_user_role (user_id, role_id)
+VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4);
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 1, id FROM sys_permission;
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 2, id FROM sys_permission
+WHERE permission_code IN (
+    'menu:dashboard', 'menu:residents', 'menu:properties', 'menu:repairs', 'menu:parking', 'menu:notices',
+    'button:resident:create', 'button:resident:update', 'button:resident:delete',
+    'button:repair:create', 'button:repair:update',
+    'button:notice:create', 'button:notice:delete'
+);
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 3, id FROM sys_permission
+WHERE permission_code IN (
+    'menu:dashboard', 'menu:residents', 'menu:billing', 'menu:parking',
+    'button:bill:create', 'button:bill:update', 'button:bill:delete'
+);
+
+INSERT INTO sys_role_permission (role_id, permission_id)
+SELECT 4, id FROM sys_permission
+WHERE permission_code IN (
+    'menu:dashboard', 'menu:properties', 'menu:repairs', 'menu:parking',
+    'button:repair:update', 'button:repair:delete'
+);
+
 INSERT INTO resident (name, identity_type, phone, building, room_no, vehicles, verified_status, tag, status)
 VALUES
 ('林晓雯', '业主', '138****1024', 'A1', '1203', 2, '已认证', '高频报修', '正常'),

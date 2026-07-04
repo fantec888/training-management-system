@@ -3,6 +3,8 @@ package com.training.management.service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
 
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.dto.LoginRequest;
@@ -21,6 +23,7 @@ public class AuthService {
 
     private final SysUserMapper sysUserMapper;
     private final JwtUtil jwtUtil;
+    private final RbacService rbacService;
 
     public LoginVO login(LoginRequest request) {
         SysUser user = loadEnabledUser(request.getUsername());
@@ -49,13 +52,23 @@ public class AuthService {
     }
 
     public LoginUserVO buildLoginUser(SysUser user) {
+        Map<String, Object> permissions = rbacService.buildCurrentPermission(user);
         return new LoginUserVO(
             user.getId(),
             user.getUsername(),
             user.getRealName(),
             user.getRoleCode(),
-            user.getPhone()
+            user.getPhone(),
+            castList(permissions.get("roleCodes")),
+            castList(permissions.get("permissions")),
+            castList(permissions.get("menus")),
+            castList(permissions.get("buttons"))
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> castList(Object value) {
+        return value instanceof List<?> ? (List<String>) value : List.of();
     }
 
     public String sha256(String raw) {

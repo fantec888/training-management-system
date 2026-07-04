@@ -23,6 +23,14 @@ public interface SysUserMapper {
     @Select("""
         SELECT id, username, password_hash, real_name, role_code, department, permission_scope, phone, enabled, last_login_at, created_at, updated_at
         FROM sys_user
+        WHERE id = #{id}
+        LIMIT 1
+        """)
+    SysUser findById(@Param("id") Long id);
+
+    @Select("""
+        SELECT id, username, password_hash, real_name, role_code, department, permission_scope, phone, enabled, last_login_at, created_at, updated_at
+        FROM sys_user
         ORDER BY id
         """)
     java.util.List<SysUser> findAll();
@@ -53,6 +61,13 @@ public interface SysUserMapper {
         WHERE id = #{id}
         """)
     int update(SysUser user);
+
+    @Update("""
+        UPDATE sys_user
+        SET role_code = #{roleCode}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+        """)
+    int updateRoleCode(@Param("id") Long id, @Param("roleCode") String roleCode);
 
     @Update("""
         UPDATE sys_user

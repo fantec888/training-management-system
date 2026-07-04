@@ -1,5 +1,7 @@
 package com.training.management.domain.vo;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,4 +14,8 @@ public class LoginUserVO {
     private String realName;
     private String roleCode;
     private String phone;
+    private List<String> roleCodes;
+    private List<String> permissions;
+    private List<String> menus;
+    private List<String> buttons;
 }

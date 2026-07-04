@@ -17,7 +17,7 @@
         </div>
         <div class="toolbar-right">
           <el-button @click="exportResidents">导出档案</el-button>
-          <el-button type="primary" @click="openCreate">新增住户</el-button>
+          <el-button v-if="canDo('button:resident:create')" type="primary" @click="openCreate">新增住户</el-button>
         </div>
       </div>
     </el-card>
@@ -89,11 +89,11 @@
         <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">查看</el-button>
-            <el-button link @click="openEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="toggleResident(row)">
+            <el-button v-if="canDo('button:resident:update')" link @click="openEdit(row)">编辑</el-button>
+            <el-button v-if="canDo('button:resident:update')" link type="danger" @click="toggleResident(row)">
               {{ row.status === '停用' ? '启用' : '停用' }}
             </el-button>
-            <el-button link type="danger" @click="removeResident(row)">删除</el-button>
+            <el-button v-if="canDo('button:resident:delete')" link type="danger" @click="removeResident(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -166,6 +166,8 @@ import {
 } from '../api/property'
 import { residentsFallback } from '../data/mock'
 import { exportCsv } from '../utils/exportCsv'
+import { getUser } from '../utils/auth'
+import { hasPermission } from '../utils/roles'
 
 const residents = ref(residentsFallback)
 const keyword = ref('')
@@ -175,6 +177,7 @@ const formVisible = ref(false)
 const detailVisible = ref(false)
 const formMode = ref('create')
 const selectedResident = ref({})
+const currentUser = computed(() => getUser())
 
 const form = reactive(defaultResident())
 
@@ -189,6 +192,10 @@ const filteredResidents = computed(() => residents.value.filter((item) => {
 const verifiedCount = computed(() => residents.value.filter((item) => item.verifiedStatus === '已认证').length)
 const vehicleCount = computed(() => residents.value.reduce((sum, item) => sum + Number(item.vehicles || 0), 0))
 const disabledCount = computed(() => residents.value.filter((item) => item.status === '停用').length)
+
+function canDo(permissionCode) {
+  return hasPermission(currentUser.value, permissionCode)
+}
 
 async function loadResidents() {
   try {

@@ -1,9 +1,9 @@
 <template>
-  <section class="page-grid">
+  <section class="page-grid rbac-page">
     <el-row :gutter="12">
-      <el-col :xs="12" :lg="6" v-for="item in roleStats" :key="item.code">
+      <el-col :xs="12" :lg="6" v-for="item in roleStats" :key="item.roleCode">
         <el-card shadow="never" class="metric-card compact">
-          <span class="metric-label">{{ item.name }}</span>
+          <span class="metric-label">{{ item.roleName }}</span>
           <strong class="metric-value">{{ item.count }}</strong>
         </el-card>
       </el-col>
@@ -13,96 +13,186 @@
       <template #header>
         <div class="panel-header">
           <div>
-            <strong>后台账号中心</strong>
-            <span>维护管理员、财务、维修、物业人员的角色权限和账号状态</span>
+            <strong>RBAC 权限中心</strong>
+            <span>用户、角色、菜单权限、按钮权限和授权关系统一维护</span>
           </div>
           <div class="toolbar-right">
-            <el-button @click="roleVisible = true">角色配置</el-button>
-            <el-button type="primary" @click="openCreate">新增账号</el-button>
+            <el-button v-if="canDo('button:permission:manage')" @click="openPermissionCreate">新增权限</el-button>
+            <el-button v-if="canDo('button:role:manage')" @click="openRoleCreate">新增角色</el-button>
+            <el-button v-if="canDo('button:user:create')" type="primary" @click="openUserCreate">新增账号</el-button>
           </div>
         </div>
       </template>
 
-      <el-table :data="systemUsers" v-if="systemUsers.length">
-        <el-table-column prop="realName" label="姓名" width="120" fixed="left" />
-        <el-table-column prop="username" label="账号" width="140" />
-        <el-table-column label="角色" width="150">
-          <template #default="{ row }">
-            <el-tag effect="plain">{{ roleName(row.roleCode) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="department" label="所属部门" width="160" />
-        <el-table-column prop="lastLoginAt" label="最近登录" width="180" />
-        <el-table-column prop="permissionScope" label="权限范围" min-width="220" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.enabled ? 'success' : 'danger'" effect="plain">
-              {{ row.enabled ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button link :type="row.enabled ? 'danger' : 'primary'" @click="toggleStatus(row)">
-              {{ row.enabled ? '禁用' : '启用' }}
-            </el-button>
-            <el-button link type="danger" @click="removeUser(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-empty v-else description="暂无系统用户数据" />
+      <el-tabs v-model="activeTab" class="rbac-tabs">
+        <el-tab-pane label="用户管理" name="users">
+          <el-table :data="systemUsers" v-loading="loading">
+            <el-table-column prop="realName" label="姓名" width="120" fixed="left" />
+            <el-table-column prop="username" label="账号" width="140" />
+            <el-table-column label="主角色" width="150">
+              <template #default="{ row }">
+                <el-tag effect="plain">{{ roleName(row.roleCode) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="department" label="部门" width="160" />
+            <el-table-column prop="permissionScope" label="权限说明" min-width="220" />
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.enabled ? 'success' : 'danger'" effect="plain">
+                  {{ row.enabled ? '启用' : '禁用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="260" fixed="right">
+              <template #default="{ row }">
+                <el-button v-if="canDo('button:user-role:assign')" link type="primary" @click="openUserRole(row)">分配角色</el-button>
+                <el-button v-if="canDo('button:user:update')" link type="primary" @click="openUserEdit(row)">编辑</el-button>
+                <el-button v-if="canDo('button:user:update')" link :type="row.enabled ? 'danger' : 'primary'" @click="toggleStatus(row)">
+                  {{ row.enabled ? '禁用' : '启用' }}
+                </el-button>
+                <el-button v-if="canDo('button:user:delete')" link type="danger" @click="removeUser(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="角色管理" name="roles">
+          <el-table :data="roles" v-loading="loading">
+            <el-table-column prop="roleName" label="角色名称" width="150" />
+            <el-table-column prop="roleCode" label="角色编码" width="180" />
+            <el-table-column prop="description" label="说明" min-width="260" />
+            <el-table-column prop="sortOrder" label="排序" width="90" />
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.enabled ? 'success' : 'danger'" effect="plain">{{ row.enabled ? '启用' : '禁用' }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="240" fixed="right">
+              <template #default="{ row }">
+                <el-button v-if="canDo('button:role-permission:assign')" link type="primary" @click="openRolePermission(row)">授权</el-button>
+                <el-button v-if="canDo('button:role:manage')" link type="primary" @click="openRoleEdit(row)">编辑</el-button>
+                <el-button v-if="canDo('button:role:manage')" link type="danger" @click="removeRole(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="菜单权限" name="permissions">
+          <el-table :data="permissions" row-key="id" v-loading="loading">
+            <el-table-column prop="permissionName" label="权限名称" width="170" />
+            <el-table-column prop="permissionCode" label="权限编码" min-width="230" />
+            <el-table-column label="类型" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.permissionType === 'MENU' ? 'primary' : 'warning'" effect="plain">
+                  {{ row.permissionType === 'MENU' ? '菜单' : '按钮' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="routePath" label="路由" width="130" />
+            <el-table-column prop="componentKey" label="模块" width="130" />
+            <el-table-column prop="sortOrder" label="排序" width="90" />
+            <el-table-column label="操作" width="160" fixed="right">
+              <template #default="{ row }">
+                <el-button v-if="canDo('button:permission:manage')" link type="primary" @click="openPermissionEdit(row)">编辑</el-button>
+                <el-button v-if="canDo('button:permission:manage')" link type="danger" @click="removePermission(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="授权分配" name="assign">
+          <div class="assignment-grid">
+            <div class="assignment-panel">
+              <strong>用户角色分配</strong>
+              <el-select v-model="selectedUserId" placeholder="选择用户" style="width: 100%" @change="loadUserRoles">
+                <el-option v-for="user in systemUsers" :key="user.id" :label="`${user.realName}（${user.username}）`" :value="user.id" />
+              </el-select>
+              <el-checkbox-group v-model="userRoleCodes" class="check-list">
+                <el-checkbox v-for="role in roles" :key="role.roleCode" :label="role.roleCode">
+                  {{ role.roleName }}
+                </el-checkbox>
+              </el-checkbox-group>
+              <el-button type="primary" :disabled="!selectedUserId || !canDo('button:user-role:assign')" @click="saveUserRoles">
+                保存用户角色
+              </el-button>
+            </div>
+
+            <div class="assignment-panel">
+              <strong>角色菜单/按钮授权</strong>
+              <el-select v-model="selectedRoleId" placeholder="选择角色" style="width: 100%" @change="loadRolePermissions">
+                <el-option v-for="role in roles" :key="role.id" :label="role.roleName" :value="role.id" />
+              </el-select>
+              <el-checkbox-group v-model="rolePermissionCodes" class="check-list permission-checks">
+                <el-checkbox v-for="permission in permissions" :key="permission.permissionCode" :label="permission.permissionCode">
+                  {{ permission.permissionName }} / {{ permission.permissionCode }}
+                </el-checkbox>
+              </el-checkbox-group>
+              <el-button type="primary" :disabled="!selectedRoleId || !canDo('button:role-permission:assign')" @click="saveRolePermissions">
+                保存角色权限
+              </el-button>
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-card>
 
-    <el-dialog v-model="formVisible" :title="form.id ? '编辑系统账号' : '新增系统账号'" width="560px">
-      <el-alert
-        v-if="!form.id"
-        title="新账号默认密码为 123456，创建后可用于演示登录。"
-        type="info"
-        show-icon
-        :closable="false"
-        class="dialog-alert"
-      />
-      <el-form :model="form" label-position="top">
-        <el-form-item label="登录账号">
-          <el-input v-model="form.username" :disabled="Boolean(form.id)" placeholder="请输入登录账号" />
-        </el-form-item>
-        <el-form-item label="姓名">
-          <el-input v-model="form.realName" placeholder="请输入姓名" />
-        </el-form-item>
-        <el-form-item label="角色">
-          <el-select v-model="form.roleCode" style="width: 100%" @change="applyRolePreset">
-            <el-option v-for="role in roles" :key="role.code" :label="role.name" :value="role.code" />
+    <el-dialog v-model="userDialogVisible" :title="userForm.id ? '编辑系统账号' : '新增系统账号'" width="560px">
+      <el-alert v-if="!userForm.id" title="新账号默认密码为 123456，登录时从数据库用户表校验。" type="info" show-icon :closable="false" class="dialog-alert" />
+      <el-form :model="userForm" label-position="top">
+        <el-form-item label="登录账号"><el-input v-model="userForm.username" :disabled="Boolean(userForm.id)" /></el-form-item>
+        <el-form-item label="姓名"><el-input v-model="userForm.realName" /></el-form-item>
+        <el-form-item label="主角色">
+          <el-select v-model="userForm.roleCode" style="width: 100%" @change="applyRolePreset">
+            <el-option v-for="role in roles" :key="role.roleCode" :label="role.roleName" :value="role.roleCode" />
           </el-select>
         </el-form-item>
-        <el-form-item label="部门">
-          <el-input v-model="form.department" placeholder="请输入所属部门" />
-        </el-form-item>
-        <el-form-item label="权限范围">
-          <el-input v-model="form.permissionScope" placeholder="请输入权限范围" />
-        </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="form.phone" placeholder="请输入手机号" />
-        </el-form-item>
-        <el-form-item label="账号状态">
-          <el-switch v-model="form.enabled" active-text="启用" inactive-text="禁用" />
-        </el-form-item>
+        <el-form-item label="部门"><el-input v-model="userForm.department" /></el-form-item>
+        <el-form-item label="权限说明"><el-input v-model="userForm.permissionScope" /></el-form-item>
+        <el-form-item label="手机号"><el-input v-model="userForm.phone" /></el-form-item>
+        <el-form-item label="账号状态"><el-switch v-model="userForm.enabled" active-text="启用" inactive-text="禁用" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="formVisible = false">取消</el-button>
+        <el-button @click="userDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitUser">保存</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="roleVisible" title="角色配置" width="760px">
-      <el-table :data="roles">
-        <el-table-column prop="name" label="角色名称" width="130" />
-        <el-table-column prop="code" label="角色编码" width="160" />
-        <el-table-column prop="department" label="默认部门" width="140" />
-        <el-table-column prop="scope" label="权限说明" />
-      </el-table>
+    <el-dialog v-model="roleDialogVisible" :title="roleForm.id ? '编辑角色' : '新增角色'" width="560px">
+      <el-form :model="roleForm" label-position="top">
+        <el-form-item label="角色名称"><el-input v-model="roleForm.roleName" /></el-form-item>
+        <el-form-item label="角色编码"><el-input v-model="roleForm.roleCode" /></el-form-item>
+        <el-form-item label="角色说明"><el-input v-model="roleForm.description" type="textarea" :rows="3" /></el-form-item>
+        <el-form-item label="排序"><el-input-number v-model="roleForm.sortOrder" :min="1" :max="999" /></el-form-item>
+        <el-form-item label="状态"><el-switch v-model="roleForm.enabled" active-text="启用" inactive-text="禁用" /></el-form-item>
+      </el-form>
       <template #footer>
-        <el-button type="primary" @click="roleVisible = false">知道了</el-button>
+        <el-button @click="roleDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitRole">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="permissionDialogVisible" :title="permissionForm.id ? '编辑权限' : '新增权限'" width="600px">
+      <el-form :model="permissionForm" label-position="top">
+        <el-form-item label="权限名称"><el-input v-model="permissionForm.permissionName" /></el-form-item>
+        <el-form-item label="权限编码"><el-input v-model="permissionForm.permissionCode" placeholder="例如 button:user:create" /></el-form-item>
+        <el-form-item label="权限类型">
+          <el-radio-group v-model="permissionForm.permissionType">
+            <el-radio-button label="MENU">菜单</el-radio-button>
+            <el-radio-button label="BUTTON">按钮</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="所属菜单">
+          <el-select v-model="permissionForm.parentId" clearable style="width: 100%">
+            <el-option v-for="item in menuPermissions" :key="item.id" :label="item.permissionName" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="路由路径"><el-input v-model="permissionForm.routePath" /></el-form-item>
+        <el-form-item label="模块标识"><el-input v-model="permissionForm.componentKey" /></el-form-item>
+        <el-form-item label="排序"><el-input-number v-model="permissionForm.sortOrder" :min="1" :max="999" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="permissionDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPermission">保存</el-button>
       </template>
     </el-dialog>
   </section>
@@ -112,91 +202,220 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
+  assignRolePermissions,
+  assignUserRoles,
+  createPermission,
+  createRole,
   createSystemUser,
+  deletePermission,
+  deleteRole,
   deleteSystemUser,
+  fetchPermissions,
+  fetchRolePermissions,
+  fetchRoles,
   fetchSystemUsers,
+  fetchUserRoles,
+  updatePermission,
+  updateRole,
   updateSystemUser,
   updateSystemUserStatus,
 } from '../api/property'
-import { systemUsersFallback } from '../data/mock'
+import { getUser } from '../utils/auth'
+import { hasPermission } from '../utils/roles'
 
-const systemUsers = ref(systemUsersFallback)
-const formVisible = ref(false)
-const roleVisible = ref(false)
-const form = reactive(defaultUser())
+const activeTab = ref('users')
+const loading = ref(false)
+const systemUsers = ref([])
+const roles = ref([])
+const permissions = ref([])
+const selectedUserId = ref(null)
+const selectedRoleId = ref(null)
+const userRoleCodes = ref([])
+const rolePermissionCodes = ref([])
 
-const roles = [
-  { name: '管理员', code: 'SUPER_ADMIN', department: '平台运营中心', scope: '系统全模块配置、账号管理和核心运营数据查看' },
-  { name: '财务', code: 'FINANCE_ADMIN', department: '财务部', scope: '收费账单、缴费确认、欠费提醒和收缴统计' },
-  { name: '维修', code: 'ENGINEER_LEAD', department: '工程维修部', scope: '报修工单、派单处理、楼栋巡检和设备维护' },
-  { name: '物业人员', code: 'SERVICE_MANAGER', department: '客户服务部', scope: '住户档案、公告活动、报修跟进和日常服务' },
-]
+const userDialogVisible = ref(false)
+const roleDialogVisible = ref(false)
+const permissionDialogVisible = ref(false)
+const userForm = reactive(defaultUser())
+const roleForm = reactive(defaultRole())
+const permissionForm = reactive(defaultPermission())
 
-const roleStats = computed(() => roles.map((role) => ({
+const currentUser = computed(() => getUser())
+const menuPermissions = computed(() => permissions.value.filter((item) => item.permissionType === 'MENU'))
+const roleStats = computed(() => roles.value.map((role) => ({
   ...role,
-  count: systemUsers.value.filter((user) => user.roleCode === role.code).length,
+  count: systemUsers.value.filter((user) => user.roleCode === role.roleCode).length,
 })))
 
-async function loadSystemUsers() {
+function canDo(code) {
+  return hasPermission(currentUser.value, code)
+}
+
+async function loadAll() {
+  loading.value = true
   try {
-    const response = await fetchSystemUsers()
-    systemUsers.value = response.data
-  } catch (error) {
-    ElMessage.warning('系统用户数据暂时无法加载，已显示默认状态')
-    systemUsers.value = systemUsersFallback
+    const [usersRes, rolesRes, permissionsRes] = await Promise.all([
+      fetchSystemUsers(),
+      fetchRoles(),
+      fetchPermissions(),
+    ])
+    systemUsers.value = usersRes.data
+    roles.value = rolesRes.data
+    permissions.value = permissionsRes.data
+  } finally {
+    loading.value = false
   }
 }
 
-function openCreate() {
-  Object.assign(form, defaultUser())
-  formVisible.value = true
+function openUserCreate() {
+  Object.assign(userForm, defaultUser())
+  userDialogVisible.value = true
 }
 
-function openEdit(row) {
-  Object.assign(form, { ...row })
-  formVisible.value = true
+function openUserEdit(row) {
+  Object.assign(userForm, { ...row })
+  userDialogVisible.value = true
 }
 
 async function submitUser() {
-  if (!form.username || !form.realName || !form.department) {
-    ElMessage.warning('请补全账号、姓名和部门')
+  if (!userForm.username || !userForm.realName || !userForm.roleCode) {
+    ElMessage.warning('请补全账号、姓名和角色')
     return
   }
-  if (form.id) {
-    await updateSystemUser(form.id, form)
+  if (userForm.id) {
+    await updateSystemUser(userForm.id, userForm)
     ElMessage.success('账号信息已更新')
   } else {
-    await createSystemUser(form)
-    ElMessage.success('系统账号已创建，默认密码 123456')
+    await createSystemUser(userForm)
+    ElMessage.success('账号已创建，默认密码 123456')
   }
-  formVisible.value = false
-  await loadSystemUsers()
+  userDialogVisible.value = false
+  await loadAll()
 }
 
 async function toggleStatus(row) {
   await updateSystemUserStatus(row.id, !row.enabled)
   ElMessage.success('账号状态已更新')
-  await loadSystemUsers()
+  await loadAll()
 }
 
 async function removeUser(row) {
-  await ElMessageBox.confirm(`确定要删除账号 ${row.username} 吗？`, '删除账号确认', {
-    type: 'warning',
-  })
+  await ElMessageBox.confirm(`确定删除账号 ${row.username} 吗？`, '删除账号确认', { type: 'warning' })
   await deleteSystemUser(row.id)
   ElMessage.success('账号已删除')
-  await loadSystemUsers()
+  await loadAll()
+}
+
+function openRoleCreate() {
+  Object.assign(roleForm, defaultRole())
+  roleDialogVisible.value = true
+}
+
+function openRoleEdit(row) {
+  Object.assign(roleForm, { ...row })
+  roleDialogVisible.value = true
+}
+
+async function submitRole() {
+  if (!roleForm.roleName || !roleForm.roleCode) {
+    ElMessage.warning('请补全角色名称和角色编码')
+    return
+  }
+  if (roleForm.id) {
+    await updateRole(roleForm.id, roleForm)
+    ElMessage.success('角色已更新')
+  } else {
+    await createRole(roleForm)
+    ElMessage.success('角色已创建')
+  }
+  roleDialogVisible.value = false
+  await loadAll()
+}
+
+async function removeRole(row) {
+  await ElMessageBox.confirm(`确定删除角色 ${row.roleName} 吗？`, '删除角色确认', { type: 'warning' })
+  await deleteRole(row.id)
+  ElMessage.success('角色已删除')
+  await loadAll()
+}
+
+function openPermissionCreate() {
+  Object.assign(permissionForm, defaultPermission())
+  permissionDialogVisible.value = true
+}
+
+function openPermissionEdit(row) {
+  Object.assign(permissionForm, { ...row })
+  permissionDialogVisible.value = true
+}
+
+async function submitPermission() {
+  if (!permissionForm.permissionName || !permissionForm.permissionCode || !permissionForm.permissionType) {
+    ElMessage.warning('请补全权限名称、编码和类型')
+    return
+  }
+  if (permissionForm.id) {
+    await updatePermission(permissionForm.id, permissionForm)
+    ElMessage.success('权限已更新')
+  } else {
+    await createPermission(permissionForm)
+    ElMessage.success('权限已创建')
+  }
+  permissionDialogVisible.value = false
+  await loadAll()
+}
+
+async function removePermission(row) {
+  await ElMessageBox.confirm(`确定删除权限 ${row.permissionName} 吗？`, '删除权限确认', { type: 'warning' })
+  await deletePermission(row.id)
+  ElMessage.success('权限已删除')
+  await loadAll()
+}
+
+async function openUserRole(row) {
+  activeTab.value = 'assign'
+  selectedUserId.value = row.id
+  await loadUserRoles()
+}
+
+async function openRolePermission(row) {
+  activeTab.value = 'assign'
+  selectedRoleId.value = row.id
+  await loadRolePermissions()
+}
+
+async function loadUserRoles() {
+  if (!selectedUserId.value) return
+  const response = await fetchUserRoles(selectedUserId.value)
+  userRoleCodes.value = response.data
+}
+
+async function saveUserRoles() {
+  await assignUserRoles(selectedUserId.value, userRoleCodes.value)
+  ElMessage.success('用户角色已保存')
+  await loadAll()
+}
+
+async function loadRolePermissions() {
+  if (!selectedRoleId.value) return
+  const response = await fetchRolePermissions(selectedRoleId.value)
+  rolePermissionCodes.value = response.data
+}
+
+async function saveRolePermissions() {
+  await assignRolePermissions(selectedRoleId.value, rolePermissionCodes.value)
+  ElMessage.success('角色权限已保存')
+  await loadAll()
 }
 
 function applyRolePreset(roleCode) {
-  const role = roles.find((item) => item.code === roleCode)
+  const role = roles.value.find((item) => item.roleCode === roleCode)
   if (!role) return
-  form.department = role.department
-  form.permissionScope = role.scope
+  userForm.permissionScope = role.description
 }
 
 function roleName(roleCode) {
-  return roles.find((item) => item.code === roleCode)?.name || roleCode
+  return roles.value.find((item) => item.roleCode === roleCode)?.roleName || roleCode
 }
 
 function defaultUser() {
@@ -206,11 +425,36 @@ function defaultUser() {
     realName: '',
     roleCode: 'SERVICE_MANAGER',
     department: '客户服务部',
-    permissionScope: '住户档案、公告活动、报修跟进和日常服务',
+    permissionScope: '住户、工单、公告等日常服务',
     phone: '',
     enabled: true,
   }
 }
 
-onMounted(loadSystemUsers)
+function defaultRole() {
+  return {
+    id: null,
+    roleName: '',
+    roleCode: '',
+    description: '',
+    enabled: true,
+    sortOrder: 99,
+  }
+}
+
+function defaultPermission() {
+  return {
+    id: null,
+    permissionName: '',
+    permissionCode: '',
+    permissionType: 'BUTTON',
+    parentId: null,
+    routePath: '',
+    componentKey: '',
+    sortOrder: 99,
+    visible: true,
+  }
+}
+
+onMounted(loadAll)
 </script>

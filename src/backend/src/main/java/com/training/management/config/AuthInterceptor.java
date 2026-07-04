@@ -2,10 +2,12 @@ package com.training.management.config;
 
 import com.training.management.common.RequestContext;
 import com.training.management.common.RoleCodes;
+import com.training.management.common.annotation.RequirePermission;
 import com.training.management.common.annotation.RequireRole;
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.SysUser;
 import com.training.management.service.AuthService;
+import com.training.management.service.RbacService;
 import com.training.management.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
     private final AuthService authService;
+    private final RbacService rbacService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -43,6 +46,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         SysUser user = authService.loadEnabledUser(username);
         RequestContext.setCurrentUser(user);
         checkRole(handler, user);
+        checkPermission(handler, user);
         return true;
     }
 
@@ -59,6 +63,21 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         throw new BusinessException(403, "当前账号没有执行该操作的权限");
+    }
+
+    private void checkPermission(Object handler, SysUser user) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
+            return;
+        }
+
+        RequirePermission methodRule = handlerMethod.getMethodAnnotation(RequirePermission.class);
+        RequirePermission classRule = handlerMethod.getBeanType().getAnnotation(RequirePermission.class);
+        RequirePermission rule = methodRule != null ? methodRule : classRule;
+        if (rule == null || rbacService.hasAnyPermission(user.getId(), rule.value())) {
+            return;
+        }
+
+        throw new BusinessException(403, "当前账号没有接口授权：" + String.join(",", rule.value()));
     }
 
     @Override

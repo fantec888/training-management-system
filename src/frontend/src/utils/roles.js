@@ -24,6 +24,17 @@ export function roleName(roleCode) {
 }
 
 export function canAccessModule(user, moduleKey) {
+  if (Array.isArray(user?.menus) && user.menus.length) {
+    return user.menus.includes(moduleKey)
+  }
   if (!user?.roleCode) return false
   return ROLE_MODULES[user.roleCode]?.includes(moduleKey) || false
+}
+
+export function hasPermission(user, permissionCode) {
+  if (!permissionCode) return true
+  if (Array.isArray(user?.permissions)) {
+    return user.permissions.includes(permissionCode)
+  }
+  return false
 }

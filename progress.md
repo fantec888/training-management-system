@@ -47,3 +47,39 @@
   - Added delete/status lifecycle actions for residents, buildings, rooms, repairs, bills, notices, and system users.
   - Added MySQL profile configuration and `docs/mysql-setup.md` for classroom remote database switching.
   - Refined login and shell UI with role-permission explanation, role tag, and role-aware menu indication.
+
+## 2026-07-04
+
+- Started 0703/0704 RBAC homework implementation.
+- Added backend dependencies for MyBatis-Plus, PageHelper, and springdoc-openapi.
+- Added explicit transaction management config and OpenAPI metadata.
+- Added RBAC database tables and seed data:
+  - `sys_role`
+  - `sys_permission`
+  - `sys_user_role`
+  - `sys_role_permission`
+- Added backend RBAC model, mapper, service, and controller APIs.
+- Added `@RequirePermission` and connected interface authorization in the auth interceptor.
+- Extended login/current-user response with role codes, permission codes, menus, and button permissions.
+- Added PageHelper resident pagination endpoint: `GET /api/residents/page`.
+- Backend verification passed: `src\backend\mvnw.cmd -q test`.
+- Rebuilt the frontend system users page as an RBAC permission center:
+  - User management
+  - Role management
+  - Menu/button permission management
+  - User-role assignment
+  - Role-permission assignment
+- Added frontend button-level permission guards for residents, repairs, billing, notices, and system users.
+- Frontend verification passed: `src\frontend\npm.cmd run build`.
+- Local services started and verified:
+  - Backend: `http://127.0.0.1:8080`
+  - Frontend: `http://127.0.0.1:5173`
+- API verification passed:
+  - Login returned `code=200`
+  - RBAC roles: 4
+  - RBAC permissions: 26
+  - Current admin menus: 8
+  - Current admin buttons: 18
+  - Resident pagination returned total 6 and page size 3
+  - OpenAPI docs loaded at `/v3/api-docs`
+- Generated homework screenshots and Word document under `每日作业\0703作业`.

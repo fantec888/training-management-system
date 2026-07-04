@@ -13,7 +13,7 @@
           <el-input v-model="periodFilter" placeholder="账期，如 2026-07" clearable />
         </div>
         <div class="toolbar-right">
-          <el-button type="primary" @click="openCreate">新增账单</el-button>
+          <el-button v-if="canDo('button:bill:create')" type="primary" @click="openCreate">新增账单</el-button>
         </div>
       </div>
     </el-card>
@@ -72,9 +72,9 @@
         <el-table-column prop="dueDate" label="截止日期" min-width="120" />
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button link type="success" :disabled="row.status === '已缴费'" @click="markPaid(row)">缴费确认</el-button>
-            <el-button link type="danger" :disabled="row.status === '已缴费'" @click="markOverdue(row)">标记逾期</el-button>
-            <el-button link type="danger" @click="removeBill(row)">删除</el-button>
+            <el-button v-if="canDo('button:bill:update')" link type="success" :disabled="row.status === '已缴费'" @click="markPaid(row)">缴费确认</el-button>
+            <el-button v-if="canDo('button:bill:update')" link type="danger" :disabled="row.status === '已缴费'" @click="markOverdue(row)">标记逾期</el-button>
+            <el-button v-if="canDo('button:bill:delete')" link type="danger" @click="removeBill(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -127,6 +127,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { createBill, deleteBill, fetchBilling, updateBillStatus } from '../api/property'
 import { billsFallback } from '../data/mock'
 import { toCurrency } from '../utils/format'
+import { getUser } from '../utils/auth'
+import { hasPermission } from '../utils/roles'
 
 const billing = ref(billsFallback)
 const keyword = ref('')
@@ -134,6 +136,7 @@ const statusFilter = ref('')
 const periodFilter = ref('')
 const formVisible = ref(false)
 const form = reactive(defaultBill())
+const currentUser = computed(() => getUser())
 
 const filteredBills = computed(() => {
   return billing.value.bills.filter((bill) => {
@@ -151,6 +154,10 @@ const collectionRate = computed(() => {
   if (!receivable) return '0.0'
   return ((paid / receivable) * 100).toFixed(1)
 })
+
+function canDo(permissionCode) {
+  return hasPermission(currentUser.value, permissionCode)
+}
 
 async function loadBilling() {
   try {

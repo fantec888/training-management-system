@@ -9,7 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.training.management.common.RequestContext;
+import com.training.management.common.PageResult;
 import com.training.management.common.exception.BusinessException;
 import com.training.management.domain.entity.Bill;
 import com.training.management.domain.entity.Building;
@@ -47,6 +50,19 @@ public class PropertyService {
 
     public List<Resident> listResidents() {
         return residentMapper.findAll();
+    }
+
+    public PageResult<Resident> pageResidents(int pageNum, int pageSize) {
+        PageHelper.startPage(Math.max(pageNum, 1), Math.max(pageSize, 1));
+        List<Resident> rows = residentMapper.findAll();
+        PageInfo<Resident> page = new PageInfo<>(rows);
+        return new PageResult<>(
+            page.getList(),
+            page.getTotal(),
+            page.getPageNum(),
+            page.getPageSize(),
+            page.getPages()
+        );
     }
 
     public Resident createResident(Resident resident) {

@@ -16,7 +16,7 @@
             <strong>公告与活动编排</strong>
             <span>社区通知、活动和安全提醒</span>
           </div>
-          <el-button type="primary" class="notice-publish-button" @click="openCreate">
+          <el-button v-if="canDo('button:notice:create')" type="primary" class="notice-publish-button" @click="openCreate">
             发布新公告
           </el-button>
         </div>
@@ -37,10 +37,10 @@
         </el-table-column>
         <el-table-column label="操作" width="170" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="toggleNotice(row)">
+            <el-button v-if="canDo('button:notice:create')" link type="primary" @click="toggleNotice(row)">
               {{ row.status === '已发布' ? '下架' : '发布' }}
             </el-button>
-            <el-button link type="danger" @click="removeNotice(row)">删除</el-button>
+            <el-button v-if="canDo('button:notice:delete')" link type="danger" @click="removeNotice(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -82,14 +82,21 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { createNotice, deleteNotice, fetchNotices, updateNoticeStatus } from '../api/property'
 import { noticesFallback } from '../data/mock'
+import { getUser } from '../utils/auth'
+import { hasPermission } from '../utils/roles'
 
 const notices = ref(noticesFallback)
 const formVisible = ref(false)
 const form = reactive(defaultNotice())
+const currentUser = computed(() => getUser())
+
+function canDo(permissionCode) {
+  return hasPermission(currentUser.value, permissionCode)
+}
 
 async function loadNotices() {
   try {

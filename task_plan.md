@@ -30,6 +30,7 @@
 - Phase 5: Verification and local run - complete
 - Phase 6: Repository structure cleanup - complete
 - Phase 7: Role permissions, CRUD completion, MySQL profile, and UI polish - complete
+- Phase 8: 0703 RBAC homework framework upgrade and Word deliverable - complete
 
 ## Decisions
 
@@ -41,6 +42,9 @@
 - Use focused list/update APIs that are enough for classroom demo and future CRUD expansion.
 - Use lightweight role annotations for classroom-friendly permission control.
 - Keep H2 as the default local database and provide a separate MySQL profile for remote database switching.
+- For 0703 homework, implement database-backed RBAC with menu and button permissions instead of relying only on hardcoded frontend role maps.
+- Keep PageHelper usage visible through a simple resident pagination endpoint.
+- Keep MyBatis-Plus usage focused on RBAC role management to avoid rewriting existing MyBatis mappers.
 
 ## Verification
 
@@ -57,7 +61,14 @@
   - `GET /api/billing` -> `code=200`
   - `GET /api/parking` -> `code=200`
   - `GET /api/notices` -> `code=200`
-  - `GET /api/system-users` -> `code=200`
+- `GET /api/system-users` -> `code=200`
+- `POST /api/auth/login` -> `code=200`
+- `GET /api/rbac/current` -> admin has 8 menus and 18 buttons
+- `GET /api/rbac/roles` -> 4 roles
+- `GET /api/rbac/permissions` -> 26 permissions
+- `GET /api/residents/page?pageNum=1&pageSize=3` -> total 6, records 3
+- `GET /v3/api-docs` -> OpenAPI title returned
+- 0703 homework document generated at `每日作业\0703作业\0703作业-RBAC权限体系实现.docx`
 
 ## Errors Encountered
 

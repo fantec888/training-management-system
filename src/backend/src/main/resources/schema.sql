@@ -7,6 +7,10 @@ DROP TABLE IF EXISTS repair_order;
 DROP TABLE IF EXISTS room;
 DROP TABLE IF EXISTS building;
 DROP TABLE IF EXISTS resident;
+DROP TABLE IF EXISTS sys_role_permission;
+DROP TABLE IF EXISTS sys_user_role;
+DROP TABLE IF EXISTS sys_permission;
+DROP TABLE IF EXISTS sys_role;
 DROP TABLE IF EXISTS sys_user;
 
 CREATE TABLE sys_user (
@@ -22,6 +26,47 @@ CREATE TABLE sys_user (
     last_login_at DATETIME,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sys_role (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    role_code VARCHAR(50) NOT NULL UNIQUE,
+    role_name VARCHAR(80) NOT NULL,
+    description VARCHAR(255),
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sys_permission (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    permission_code VARCHAR(100) NOT NULL UNIQUE,
+    permission_name VARCHAR(80) NOT NULL,
+    permission_type VARCHAR(20) NOT NULL,
+    parent_id BIGINT,
+    route_path VARCHAR(120),
+    component_key VARCHAR(80),
+    sort_order INT NOT NULL DEFAULT 0,
+    visible TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sys_user_role (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, role_id)
+);
+
+CREATE TABLE sys_role_permission (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    role_id BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (role_id, permission_id)
 );
 
 CREATE TABLE resident (
