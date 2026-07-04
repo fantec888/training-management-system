@@ -10,7 +10,7 @@ import PropertiesView from './views/PropertiesView.vue'
 import RepairsView from './views/RepairsView.vue'
 import ResidentsView from './views/ResidentsView.vue'
 import SystemUsersView from './views/SystemUsersView.vue'
-import { getToken, getUser } from './utils/auth'
+import { clearAuth, getToken, getUser, hasValidUser } from './utils/auth'
 import { canAccessModule } from './utils/roles'
 
 const routes = [
@@ -130,6 +130,11 @@ router.beforeEach((to) => {
   }
 
   if (!token) {
+    return '/login'
+  }
+
+  if (!hasValidUser()) {
+    clearAuth()
     return '/login'
   }
 

@@ -15,11 +15,23 @@ export function removeToken() {
 
 export function getUser() {
   const raw = localStorage.getItem(USER_KEY)
-  return raw ? JSON.parse(raw) : null
+  if (!raw) return null
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    clearAuth()
+    return null
+  }
 }
 
 export function setUser(user) {
   localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
+export function hasValidUser() {
+  const user = getUser()
+  return Boolean(user?.id && user?.roleCode)
 }
 
 export function clearAuth() {
