@@ -224,10 +224,10 @@ const loading = ref(false)
 const billVisible = ref(false)
 const feeVisible = ref(false)
 const paymentVisible = ref(false)
+const currentUser = computed(() => getUser())
 const billForm = reactive(defaultBill())
 const feeForm = reactive(defaultFeeItem())
 const paymentForm = reactive(defaultPayment())
-const currentUser = computed(() => getUser())
 
 const filteredBills = computed(() => billing.value.bills.filter((bill) => {
   const text = `${bill.residentName}${bill.house}`.toLowerCase()
